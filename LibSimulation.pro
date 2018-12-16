@@ -13,16 +13,14 @@
 #-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 include($$PWD/../LibCommon/LibCommon.pri)
-INCLUDEPATH += $$PWD/
 
 TARGET = LibSimulation
 
 TEMPLATE = lib
 CONFIG += staticlib
 
-HEADERS = $$files(*.h, true)
-HEADERS += $$files(*.hpp, true)
-SOURCES += $$files(*.cpp, true)
+HEADERS = $$files($$PWD/LibSimulation/*.h, true)
+SOURCES += $$files($$PWD/LibSimulation/*.cpp, true)
 
 #-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 CONFIG(debug, debug|release) {
