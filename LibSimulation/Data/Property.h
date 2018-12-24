@@ -13,9 +13,7 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 #pragma once
-
-#include <LibCommon/CommonSetup.h>
-#include <unordered_map>
+#include <LibSimulation/Data/StringHash.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class PropertyBase {
@@ -82,8 +80,8 @@ public:
      * \brief Group must be added before adding properties of that group
      */
     void addGroup(const char* groupName) {
-        __NT_REQUIRE(isValidHash(groupName) && !hasGroup(groupName));
-        auto hashVal = strHash(groupName);
+        __NT_REQUIRE(StringHash::isValidHash(groupName) && !hasGroup(groupName));
+        auto hashVal = StringHash::hash(groupName);
         m_Properties[hashVal] = {};
         m_GroupNames[hashVal] = String(groupName);
     }
@@ -91,48 +89,48 @@ public:
     ////////////////////////////////////////////////////////////////////////////////
     template<class T>
     void addProperty(const char* groupName, const char* propName) {
-        __NT_REQUIRE(isValidHash(groupName) && isValidHash(propName) && hasGroup(groupName));
-        m_Properties[strHash(groupName)][strHash(propName)] = new Property<T>(groupName, propName);
+        __NT_REQUIRE(StringHash::isValidHash(groupName) && StringHash::isValidHash(propName) && hasGroup(groupName) && !hasProperty(groupName, propName));
+        m_Properties[StringHash::hash(groupName)][StringHash::hash(propName)] = new Property<T>(groupName, propName);
     }
 
     template<class T>
     void addProperty(const char* groupName, const char* propName,  const T& defaultValue) {
-        __NT_REQUIRE(isValidHash(groupName) && isValidHash(propName) && hasGroup(groupName));
-        m_Properties[strHash(groupName)][strHash(propName)] = new Property<T>(groupName, propName, defaultValue);
+        __NT_REQUIRE(StringHash::isValidHash(groupName) && StringHash::isValidHash(propName) && hasGroup(groupName) && !hasProperty(groupName, propName));
+        m_Properties[StringHash::hash(groupName)][StringHash::hash(propName)] = new Property<T>(groupName, propName, defaultValue);
     }
 
     template<class T>
     Property<T>* property(const char* groupName, const char* propName) {
         assert(hasProperty(groupName, propName));
-        auto propPtr = m_Properties[strHash(groupName)][strHash(propName)]; assert(propPtr != nullptr && dynamic_cast<Property<T>*>(propPtr) != nullptr);
+        auto propPtr = m_Properties[StringHash::hash(groupName)][StringHash::hash(propName)]; assert(propPtr != nullptr && dynamic_cast<Property<T>*>(propPtr) != nullptr);
         return static_cast<Property<T>*>(propPtr);
     }
 
     template<class T>
     const Property<T>* property(const char* groupName, const char* propName) const {
         assert(hasProperty(groupName, propName));
-        const auto propPtr = m_Properties[strHash(groupName)][strHash(propName)]; assert(propPtr != nullptr && dynamic_cast<Property<T>*>(propPtr) != nullptr);
+        const auto propPtr = m_Properties[StringHash::hash(groupName)][StringHash::hash(propName)]; assert(propPtr != nullptr && dynamic_cast<Property<T>*>(propPtr) != nullptr);
         return static_cast<const Property<T>*>(propPtr);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     const auto& getAllProperties() const { return m_Properties; }
-    const auto& getGroupProperties(const char* groupName) const { assert(hasGroup(groupName)); return m_Properties.at(strHash(groupName)); }
+    const auto& getGroupProperties(const char* groupName) const { assert(hasGroup(groupName)); return m_Properties.at(StringHash::hash(groupName)); }
     const auto& getGroupProperties(size_t group) const { assert(hasGroup(group)); return m_Properties.at(group); }
 
     auto getGroupNameWithProperties(const char* groupName) const {
-        auto group = strHash(groupName); assert(hasGroup(group));
+        auto group = StringHash::hash(groupName); assert(hasGroup(group));
         return std::pair<String, const std::unordered_map<size_t, PropertyBase*>&>(m_GroupNames.at(group), m_Properties.at(group));
     }
 
     size_t getGroupDataSize(const char* groupName) const {
         assert(hasGroup(groupName));
-        return m_GroupDataSizes.at(strHash(groupName));
+        return m_GroupDataSizes.at(StringHash::hash(groupName));
     }
 
     void resizeGroupData(const char* groupName, size_t size) {
         assert(hasGroup(groupName));
-        auto  hashVal    = strHash(groupName);
+        auto  hashVal    = StringHash::hash(groupName);
         auto& groupProps = m_Properties[hashVal];
         for(auto& kv: groupProps) {
             kv.second->resize(size);
@@ -142,26 +140,26 @@ public:
 
     void reserveGroupData(const char* groupName, size_t size) {
         assert(hasGroup(groupName));
-        auto& groupProps = m_Properties[strHash(groupName)];
+        auto& groupProps = m_Properties[StringHash::hash(groupName)];
         for(auto& kv: groupProps) {
             kv.second->reserve(size);
         }
     }
 
     void removeGroup(const char* groupName) {
-        __NT_REQUIRE(isValidHash(groupName) && hasGroup(groupName));
-        m_Properties.erase(strHash(groupName));
+        __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
+        m_Properties.erase(StringHash::hash(groupName));
     }
 
     void removeProperty(const char* groupName, const char* propName) {
-        __NT_REQUIRE(isValidHash(groupName) && isValidHash(propName) && hasProperty(groupName, propName));
-        auto& groupProps = m_Properties[strHash(groupName)];
-        groupProps.erase(strHash(propName));
+        __NT_REQUIRE(StringHash::isValidHash(groupName) && StringHash::isValidHash(propName) && hasProperty(groupName, propName));
+        auto& groupProps = m_Properties[StringHash::hash(groupName)];
+        groupProps.erase(StringHash::hash(propName));
     }
 
     void removeGroupElementAt(const char* groupName, size_t idx) {
-        assert(isValidHash(groupName) && hasGroup(groupName));
-        auto hashVal = strHash(groupName);
+        assert(StringHash::isValidHash(groupName) && hasGroup(groupName));
+        auto hashVal = StringHash::hash(groupName);
         assert(m_GroupDataSizes[hashVal] > idx);
         const auto& groupProps = getGroupProperties(hashVal);
         for(auto& kv: groupProps) {
@@ -172,37 +170,14 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////////
     bool hasGroup(size_t group) const { return m_Properties.find(group) != m_Properties.end(); }
-    bool hasGroup(const char* groupName) const { return hasGroup(strHash(groupName)); }
+    bool hasGroup(const char* groupName) const { return hasGroup(StringHash::hash(groupName)); }
     bool hasProperty(const char* groupName, const char* propName) const {
         if(!hasGroup(groupName)) { return false; }
         const auto& groupProps = getGroupProperties(groupName);
-        return groupProps.find(strHash(propName)) != groupProps.cend();
+        return groupProps.find(StringHash::hash(propName)) != groupProps.cend();
     }
 
 private:
-    static constexpr size_t strHash(const char* cstr) {
-        size_t d = 5381lu;
-        size_t i = 0lu;
-        while(cstr[i] != '\0') {
-            d = d * 33lu + cstr[i++];
-        }
-        return d;
-    }
-
-    bool isValidHash(const char* cstr) {
-        const auto str     = String(cstr);
-        const auto hashVal = strHash(cstr);
-        if(m_HashedValues.find(hashVal) != m_HashedValues.end() && m_HashedValues[hashVal] != str) {
-            return false;
-        }
-        m_HashedValues[hashVal] = str;
-        return true;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // helper variable to verify the validity of perfect string hashing
-    std::unordered_map<size_t, String> m_HashedValues;
-
     ////////////////////////////////////////////////////////////////////////////////
     // store group data
     std::unordered_map<size_t, String> m_GroupNames;
