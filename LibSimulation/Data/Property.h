@@ -21,17 +21,22 @@
 class PropertyBase {
 public:
     PropertyBase(const String& groupName, const String& propName) : m_Group(groupName), m_PropertyName(propName) {}
-    virtual ~PropertyBase() {}
-    const String& groupName() const { return m_Group; }
-    const String& propertyName() const { return m_PropName; }
+    virtual ~PropertyBase() = default;
+    const auto& groupName() const { return m_Group; }
+    const auto& propertyName() const { return m_PropertyName; }
+    auto& flag() { return m_Flag; }
+    ////////////////////////////////////////////////////////////////////////////////
+    virtual size_t      size() const        = 0;
+    virtual size_t      elementSize() const = 0;
+    virtual const char* dataPtr() const     = 0;
     ////////////////////////////////////////////////////////////////////////////////
     virtual void reserve(size_t n)    = 0;
     virtual void resize(size_t n)     = 0;
-    virtual void push_back()          = 0;
     virtual bool removeAt(size_t idx) = 0;
 protected:
     String m_Group;
     String m_PropertyName;
+    Int    m_Flag; // variable for storing additional information
 };
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -42,19 +47,16 @@ public:
     Property(const String& groupName, const String& propName, const T& defaultVal_) : PropertyBase(groupName, propName),
         m_DefaultVal(defaultVal_), m_bHasDefaultVal(true) {}
     ////////////////////////////////////////////////////////////////////////////////
-    virtual void reserve(size_t n) { m_Data.reserve(n); }
-    virtual void resize(size_t n) { if(m_bHasDefaultVal) { m_Data.resize(n, m_DefaultVal); } else { m_Data.resize(n); } }
-    virtual void push_back() { if(m_bHasDefaultVal) { m_Data.push_back(m_DefaultVal); } else { m_Data.push_back(T()); } }
-    virtual bool removeAt(size_t idx) { assert(idx < m_Data.size()); m_Data.erase(m_Data.begin() + idx); }
+    virtual size_t size() const override { return m_Data.size(); }
+    virtual size_t elementSize() const override { return sizeof(T); }
+    virtual const char* dataPtr() const override { return static_cast<const char*>(m_Data.data()); }
     ////////////////////////////////////////////////////////////////////////////////
-    size_t size() const { return m_Data.size(); }
+    virtual void reserve(size_t n) override { m_Data.reserve(n); }
+    virtual void resize(size_t n) override { if(m_bHasDefaultVal) { m_Data.resize(n, m_DefaultVal); } else { m_Data.resize(n); } }
+    virtual bool removeAt(size_t idx) override { assert(idx < m_Data.size()); m_Data.erase(m_Data.begin() + idx); }
     ////////////////////////////////////////////////////////////////////////////////
-    StdVT<T>& data() { return m_Data; }
-    const StdVT<T>& data() const { return m_Data; }
-    ////////////////////////////////////////////////////////////////////////////////
-    T* dataPtr() { return m_Data.data(); }
-    const T* dataPtr() const { return m_Data.data(); }
-    ////////////////////////////////////////////////////////////////////////////////
+    void assign(const T& val) { m_Data.assign(m_Data.size(), val); }
+    void push_back(const StdVT<T>& vals) { m_Data.insert(m_Data.end(), vals.begin(), vals.end()); }
     T& operator[](size_t idx) { return m_Data[idx]; }
     const T& operator[](size_t idx) const { return m_Data[idx]; }
 protected:
@@ -69,8 +71,8 @@ public:
     PropertyManager() = default;
     virtual ~PropertyManager() {
         for(auto& [groupName, groupProps]: m_Properties) {
-            for(auto& [propName, prop]: groupProps) {
-                delete prop;
+            for(auto& [propName, propPtr]: groupProps) {
+                delete propPtr;
             }
         }
     }
@@ -114,8 +116,18 @@ public:
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    size_g getGroupDataSize(const char* groupName) const {
-        return m_GroupDataSizes[strHash(groupName)];
+    const auto& getAllProperties() const { return m_Properties; }
+    const auto& getGroupProperties(const char* groupName) const { assert(hasGroup(groupName)); return m_Properties.at(strHash(groupName)); }
+    const auto& getGroupProperties(size_t group) const { assert(hasGroup(group)); return m_Properties.at(group); }
+
+    auto getGroupNameWithProperties(const char* groupName) const {
+        auto group = strHash(groupName); assert(hasGroup(group));
+        return std::pair<String, const std::unordered_map<size_t, PropertyBase*>&>(m_GroupNames.at(group), m_Properties.at(group));
+    }
+
+    size_t getGroupDataSize(const char* groupName) const {
+        assert(hasGroup(groupName));
+        return m_GroupDataSizes.at(strHash(groupName));
     }
 
     void resizeGroupData(const char* groupName, size_t size) {
@@ -143,7 +155,7 @@ public:
 
     void removeProperty(const char* groupName, const char* propName) {
         __NT_REQUIRE(isValidHash(groupName) && isValidHash(propName) && hasProperty(groupName, propName));
-        auto& groupProps = getGroupProperties(groupName);
+        auto& groupProps = m_Properties[strHash(groupName)];
         groupProps.erase(strHash(propName));
     }
 
@@ -151,55 +163,45 @@ public:
         assert(isValidHash(groupName) && hasGroup(groupName));
         auto hashVal = strHash(groupName);
         assert(m_GroupDataSizes[hashVal] > idx);
-        auto& groupProps = getGroupProperties(hashVal);
+        const auto& groupProps = getGroupProperties(hashVal);
         for(auto& kv: groupProps) {
             kv.second->removeAt(idx);
         }
-        m_GroupDataSizes[hashVal] = groupProps.begin()->size();
+        m_GroupDataSizes[hashVal] = groupProps.begin()->second->size();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    bool hasGroup(const char* groupName) const {
-        return m_Properties.find(strHash(groupName)) != m_Properties.end();
-    }
-
+    bool hasGroup(size_t group) const { return m_Properties.find(group) != m_Properties.end(); }
+    bool hasGroup(const char* groupName) const { return hasGroup(strHash(groupName)); }
     bool hasProperty(const char* groupName, const char* propName) const {
         if(!hasGroup(groupName)) { return false; }
         const auto& groupProps = getGroupProperties(groupName);
         return groupProps.find(strHash(propName)) != groupProps.cend();
     }
 
-    const auto& getAllProperties() const { return m_Properties; }
-    const auto& getGroupProperties(const char* groupName) const { return m_Properties[strHash(groupName)]; }
-    const auto& getGroupProperties(size_t group) const { return m_Properties[group]; }
-    auto getGroupNameWithProperties(const char* groupName) const {
-        auto hashVal = strHash(groupName);
-        return std::pair<String, const std::unordered_map<size_t, PropertyBase*>&>(m_GroupNames[hashVal], m_Properties[hashVal]);
-    }
-
 private:
-    constexpr size_t strHash(const char* str) {
-        size_t d = 5381;
-        size_t i = 0;
-        while(str[i] != '\0') {
-            d = d * 33 + str[i++];
+    static constexpr size_t strHash(const char* cstr) {
+        size_t d = 5381lu;
+        size_t i = 0lu;
+        while(cstr[i] != '\0') {
+            d = d * 33lu + cstr[i++];
         }
         return d;
     }
 
     bool isValidHash(const char* cstr) {
-        const auto str     = String(str);
+        const auto str     = String(cstr);
         const auto hashVal = strHash(cstr);
-        if(m_HashedValues.find(str) != m_HashedValues.end() && m_HashedValues[str] != hashVal) {
+        if(m_HashedValues.find(hashVal) != m_HashedValues.end() && m_HashedValues[hashVal] != str) {
             return false;
         }
-        m_HashedValues[str] = hashVal;
+        m_HashedValues[hashVal] = str;
         return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     // helper variable to verify the validity of perfect string hashing
-    std::unordered_map<String, size_t> m_HashedValues;
+    std::unordered_map<size_t, String> m_HashedValues;
 
     ////////////////////////////////////////////////////////////////////////////////
     // store group data
