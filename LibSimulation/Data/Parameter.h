@@ -13,87 +13,56 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 #pragma once
+
 #include <LibCommon/Utils/JSONHelpers.h>
 #include <LibSimulation/Data/StringHash.h>
+#include <type_traits>
+#include <variant>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-template<class Real_t>
 class Parameter {
 public:
-    Parameter(const String& groupName, const String& paramName, const String& paramDesc = nullptr) :
+    Parameter() { throw std::exception("This should not be reach!"); }
+    virtual ~Parameter() {}
+
+    Parameter(const String& groupName, const String& paramName, const String& paramDesc) :
         m_Group(groupName), m_ParamName(paramName), m_ParamDescription(paramDesc) {}
-    virtual ~Parameter() = default;
+    ////////////////////////////////////////////////////////////////////////////////
     const auto& groupName() const { return m_Group; }
     const auto& paramName() const { return m_ParamName; }
     const auto& description() const { return m_ParamDescription; }
     ////////////////////////////////////////////////////////////////////////////////
-    template<class Output> Output get() const { static_assert(false, "This line should not be reached!"); }
-
-    template<> bool get<bool>() const { return v_bool; }
-    template<> int get<int>() const { return v_int; }
-    template<> UInt get<UInt>() const { return v_uint; }
-    template<> Real_t get<Real_t>() const { return v_real; }
-
-    template<> Vec3i get<Vec3i>() const { return v3_int; }
-    template<> Vec3ui get<Vec3ui>() const { return v3_uint; }
-    template<> Vec3<Real_t> get<Vec3<Real_t>>() const { return v3_real; }
-
-    template<> Vec4i get<Vec4i>() const { return v4_int; }
-    template<> Vec4ui get<Vec4ui>() const { return v4_uint; }
-    template<> Vec4<Real_t> get<Vec4<Real_t>>() const { return v4_real; }
+    template<class Input> void set(const Input& val) { m_Data = val; }
+    template<class Output> Output get() const { assert(std::holds_alternative<Output>(m_Data)); return std::get<Output>(m_Data); }
     ////////////////////////////////////////////////////////////////////////////////
-    template<class Input> void set(const Input&) { static_assert(false, "This line should not be reached!"); }
-
-    template<> void set<bool>(const bool& val) { v_bool = val; }
-    template<> void set<int>(const int& val) { v_int = val; }
-    template<> void set<UInt>(const UInt& val) { v_uint = val; }
-    template<> void set<Real_t>(const Real_t& val) { v_real = val; }
-
-    template<> void set<Vec3i>(const Vec3i& val) { v3_int = val; }
-    template<> void set<Vec3ui>(const Vec3ui& val) { v3_uint = val; }
-    template<> void set<Vec3<Real_t>>(const Vec3<Real_t>& val) { v3_real = val; }
-
-    template<> void set<Vec4i>(const Vec4i& val) { v4_int = val; }
-    template<> void set<Vec4ui>(const Vec4ui& val) { v4_uint = val; }
-    template<> void set<Vec4<Real_t>>(const Vec4<Real_t>& val) { v4_real = val; }
-    ////////////////////////////////////////////////////////////////////////////////
-    template<class Input> bool parseValue(const JParams&) { static_assert(false, "This line should not be reached!"); }
-
-    template<> bool parseValue<bool>(const JParams& jParams) { return JSONHelpers::readBool(jParams, v_bool, m_ParamName); }
-    template<> bool parseValue<int>(const JParams& jParams) { return JSONHelpers::readValue(jParams, v_int, m_ParamName); }
-    template<> bool parseValue<UInt>(const JParams& jParams) { return JSONHelpers::readValue(jParams, v_uint, m_ParamName); }
-    template<> bool parseValue<Real_t>(const JParams& jParams) { return JSONHelpers::readValue(jParams, v_real, m_ParamName); }
-
-    template<> bool parseValue<Vec3i>(const JParams&) { return JSONHelpers::readVector(jParams, v3_int, m_ParamName); }
-    template<> bool parseValue<Vec3ui>(const JParams&) { return JSONHelpers::readVector(jParams, v3_uint, m_ParamName); }
-    template<> bool parseValue<Vec3<Real_t>>(const JParams&) { return JSONHelpers::readVector(jParams, v3_real, m_ParamName); }
-
-    template<> bool parseValue<Vec4i>(const JParams&) { return JSONHelpers::readVector(jParams, v4_int, m_ParamName); }
-    template<> bool parseValue<Vec4ui>(const JParams&) { return JSONHelpers::readVector(jParams, v4_uint, m_ParamName); }
-    template<> bool parseValue<Vec4<Real_t>>(const JParams&) { return JSONHelpers::readVector(jParams, v4_real, m_ParamName); }
+    template<class Input> void parseRequiredValue(const JParams& jParams) { __NT_REQUIRE(parseValue<Input>(jParams)); }
+    template<class Input> bool parseValue(const JParams& jParams) {
+        assert(std::holds_alternative<Input>(m_Data));
+        if constexpr (std::is_same_v<Input, bool>) {
+            bool& bVal = std::get<bool>(m_Data);
+            return JSONHelpers::readBool(jParams, bVal, m_ParamName);
+        } else {
+            if constexpr (std::is_same_v<Input, int>|| std::is_same_v<Input, UInt>
+                          || std::is_same_v<Input, float>|| std::is_same_v<Input, double>
+                          || std::is_same_v<Input, String>) {
+                Input& val = std::get<Input>(m_Data);
+                return JSONHelpers::readValue(jParams, val, m_ParamName);
+            } else {
+                Input& val = std::get<Input>(m_Data);
+                return JSONHelpers::readVector(jParams, val, m_ParamName);
+            }
+        }
+    }
 
 private:
-    union  {
-        bool   v_bool;
-        int    v_int;
-        UInt   v_uint;
-        Real_t v_real;
-
-        Vec3i        v3_int;
-        Vec3ui       v3_uint;
-        Vec3<Real_t> v3_real;
-
-        Vec4i        v4_int;
-        Vec4ui       v4_uint;
-        Vec4<Real_t> v4_real;
-    };
+    using ParameterData = std::variant<bool, int, UInt, float, double, Vec3i, Vec3ui, Vec3f, Vec4i, Vec4ui, Vec4d, String>;
+    ParameterData m_Data;
 
     String m_Group;
     String m_ParamName;
     String m_ParamDescription;
 };
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-template<class Real_t>
 class ParameterManager {
 public:
     ParameterManager()          = default;
@@ -103,28 +72,41 @@ public:
     /**
      * \brief Group must be added before adding parameters of that group
      */
-    void addGroup(const char* groupName) {
+    void addGroup(const char* groupName, const char* groupDesc) {
         __NT_REQUIRE(StringHash::isValidHash(groupName) && !hasGroup(groupName));
         auto hashVal = StringHash::hash(groupName);
         m_Parameters[hashVal] = {};
-        m_GroupNames[hashVal] = String(groupName);
+        m_GroupInfo[hashVal]  = std::pair(groupName, groupDesc);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void addParameter(const char* groupName, const char* paramName, const char* description) {
+    template<class Input>
+    Parameter& addParameter(const char* groupName, const char* paramName, const char* description, const Input& defaultValue) {
         __NT_REQUIRE(StringHash::isValidHash(groupName) && StringHash::isValidHash(paramName) && hasGroup(groupName));
-        m_Parameters[StringHash::hash(groupName)][StringHash::hash(paramName)] = Parameter<Real_t>(groupName, paramName, description);
+        auto [iter, bSuccess] = m_Parameters[StringHash::hash(groupName)].emplace(StringHash::hash(paramName), Parameter(groupName, paramName, description));
+        __NT_REQUIRE(bSuccess);
+        iter->second.set<Input>(defaultValue);
+        return iter->second;
     }
 
     template<class Input>
-    void addParameter(const char* groupName, const char* paramName, const char* description, const Input& defaultValue) {
+    Parameter& addParameter(const char* groupName, const char* paramName, const char* description, const Input& defaultValue,
+                            const JParams& jParams, bool bRequiredInptParam = false) {
         __NT_REQUIRE(StringHash::isValidHash(groupName) && StringHash::isValidHash(paramName) && hasGroup(groupName));
-        auto param = Parameter<Real_t>(groupName, paramName, description);
+        auto [iter, bSuccess] = m_Parameters[StringHash::hash(groupName)].emplace(StringHash::hash(paramName), Parameter(groupName, paramName, description));
+        __NT_REQUIRE(bSuccess);
+        auto& param = iter->second;
+
         param.set<Input>(defaultValue);
-        m_Parameters[StringHash::hash(groupName)][StringHash::hash(paramName)] = std::move(param);
+        if(bRequiredInptParam) {
+            param.parseRequiredValue<Input>(jParams);
+        } else {
+            param.parseValue<Input>(jParams);
+        }
+        return param;
     }
 
-    auto& parameter(const char* groupName, const char* paramName) {
+    Parameter& parameter(const char* groupName, const char* paramName) {
         assert(hasParmeter(groupName, paramName));
         return m_Parameters.at(StringHash::hash(groupName)).at(StringHash::hash(paramName));
     }
@@ -141,7 +123,7 @@ public:
 
     auto getGroupNameWithParams(const char* groupName) const {
         auto group = StringHash::hash(groupName); assert(hasGroup(group));
-        return std::pair<String, const std::unordered_map<size_t, Parameter<Real_t>>&>(m_GroupNames.at(group), m_Parameters.at(group));
+        return std::pair<String, const std::unordered_map<size_t, Parameter>&>(m_GroupInfo.at(group).first, m_Parameters.at(group));
     }
 
     void removeGroup(const char* groupName) {
@@ -167,8 +149,8 @@ public:
 private:
     ////////////////////////////////////////////////////////////////////////////////
     // store group data
-    std::unordered_map<size_t, String> m_GroupNames;
+    std::unordered_map<size_t, std::pair<String, String>> m_GroupInfo;
 
     // store properties, index by hashes of groups then by hashes of property names
-    std::unordered_map<size_t, std::unordered_map<size_t, Parameter<Real_t>>> m_Parameters;
+    std::unordered_map<size_t, std::unordered_map<size_t, Parameter>> m_Parameters;
 };
