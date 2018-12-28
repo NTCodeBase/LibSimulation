@@ -39,13 +39,13 @@ public:
     template<class Input> void parseRequiredValue(const JParams& jParams) { __NT_REQUIRE(parseValue<Input>(jParams)); }
     template<class Input> bool parseValue(const JParams& jParams) {
         assert(std::holds_alternative<Input>(m_Data));
-        if constexpr (std::is_same_v<Input, bool>) {
+        if constexpr(std::is_same_v<Input, bool>) {
             bool& bVal = std::get<bool>(m_Data);
             return JSONHelpers::readBool(jParams, bVal, m_ParamName);
         } else {
-            if constexpr (std::is_same_v<Input, int>|| std::is_same_v<Input, UInt>
-                          || std::is_same_v<Input, float>|| std::is_same_v<Input, double>
-                          || std::is_same_v<Input, String>) {
+            if constexpr(std::is_same_v<Input, int>|| std::is_same_v<Input, UInt>
+                         || std::is_same_v<Input, float>|| std::is_same_v<Input, double>
+                         || std::is_same_v<Input, String>) {
                 Input& val = std::get<Input>(m_Data);
                 return JSONHelpers::readValue(jParams, val, m_ParamName);
             } else {
@@ -56,7 +56,7 @@ public:
     }
 
 private:
-    using ParameterData = std::variant<bool, int, UInt, float, double, Vec3i, Vec3ui, Vec3f, Vec4i, Vec4ui, Vec4d, String>;
+    using ParameterData = std::variant<bool, int, UInt, float, double, Vec2i, Vec2ui, Vec2f, Vec3i, Vec3ui, Vec3f, Vec4i, Vec4ui, Vec4d, String>;
     ParameterData m_Data;
 
     String m_Group;
