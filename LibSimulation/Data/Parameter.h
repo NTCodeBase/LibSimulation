@@ -111,7 +111,7 @@ public:
         return m_Parameters.at(StringHash::hash(groupName)).at(StringHash::hash(paramName));
     }
 
-    const auto& parameter(const char* groupName, const char* paramName) const {
+    const Parameter& parameter(const char* groupName, const char* paramName) const {
         assert(hasParmeter(groupName, paramName));
         return m_Parameters.at(StringHash::hash(groupName)).at(StringHash::hash(paramName));
     }
