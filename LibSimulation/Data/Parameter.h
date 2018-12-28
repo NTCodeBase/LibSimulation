@@ -33,6 +33,7 @@ public:
     const auto& description() const { return m_ParamDescription; }
     ////////////////////////////////////////////////////////////////////////////////
     template<class Input> void set(const Input& val) { m_Data = val; }
+    template<class Output> Output& get() { assert(std::holds_alternative<Output>(m_Data)); return std::get<Output>(m_Data); }
     template<class Output> Output get() const { assert(std::holds_alternative<Output>(m_Data)); return std::get<Output>(m_Data); }
     ////////////////////////////////////////////////////////////////////////////////
     template<class Input> void parseRequiredValue(const JParams& jParams) { __NT_REQUIRE(parseValue<Input>(jParams)); }
