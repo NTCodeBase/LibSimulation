@@ -21,7 +21,7 @@ namespace SimulationObjects {
 template<Int N, class Real_t>
 class ParticleGenerator : public SimulationObject<N, Real_t> {
     ////////////////////////////////////////////////////////////////////////////////
-    __NT_TYPE_ALIAS
+    __NT_TYPE_ALIAS __NT_DECLARE_PARTICLE_SOLVER_ACCESSORS
     ////////////////////////////////////////////////////////////////////////////////
 public:
     ParticleGenerator() = delete;
@@ -29,16 +29,18 @@ public:
         SimulationObject<N, Real_t>(jParams_, logger_, parameterManager_, propertyManager_) { initializeParameters(jParams_); }
     ////////////////////////////////////////////////////////////////////////////////
     virtual void initializeParameters(const JParams& jParams) override;
-    virtual void initializeProperties() override;
-    virtual UInt generateParticles(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects, bool bIgnoreOverlapped = false) override;
+    virtual UInt generateParticles(PropertyGroup& propertyGroup, StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects,
+                                   bool bIgnoreOverlapped = false) override;
 
 protected:
-    bool   m_bCrashIfNoParticle = true;
-    VecN   m_v0 = VecN(0);
+    StdVT_VecN generateParticles(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects, bool bIgnoreOverlapped = false);
+    ////////////////////////////////////////////////////////////////////////////////
     Real_t m_MaterialDensity = Real_t(1000);
     Real_t m_ParticleMass    = Real_t(0);
     Real_t m_JitterRatio     = Real_t(0);
     VecN   m_SamplingRatio   = VecN(1.0);
+    VecN   m_v0 = VecN(0);
+    bool   m_bCrashIfNoParticle = true;
 };
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
