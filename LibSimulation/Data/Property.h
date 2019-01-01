@@ -33,6 +33,7 @@ public:
     virtual void reserve(size_t n)    = 0;
     virtual void resize(size_t n)     = 0;
     virtual void removeAt(size_t idx) = 0;
+    virtual void reset() = 0;
 protected:
     String m_Group;
     String m_Name;
@@ -55,6 +56,7 @@ public:
     virtual void reserve(size_t n) override { m_Data.reserve(n); }
     virtual void resize(size_t n) override { if(m_bHasDefaultVal) { m_Data.resize(n, m_DefaultVal); } else { m_Data.resize(n); } }
     virtual void removeAt(size_t idx) override { assert(idx < m_Data.size()); m_Data.erase(m_Data.begin() + idx); }
+    virtual void reset() override { if(m_bHasDefaultVal) { m_Data.assign(size(), m_DefaultVal); } else { m_Data.assign(size(), T()); } }
     ////////////////////////////////////////////////////////////////////////////////
     void assign(const T& val) { m_Data.assign(m_Data.size(), val); }
     T& operator[](size_t idx) { return m_Data[idx]; }
