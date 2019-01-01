@@ -70,7 +70,7 @@ protected:
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class PropertyGroup {
 public:
-    PropertyGroup() { __NT_DIE("This place should not be reached!") }
+    PropertyGroup() { throw std::exception("This place should not be reached!"); }
     PropertyGroup(const String& name) : m_Name(name), m_DataSize(0) {}
     virtual ~PropertyGroup() {
         for(auto& [prop, propPtr]: m_Properties) {
@@ -94,17 +94,15 @@ public:
     }
 
     template<class T>
-    void addDiscreteProperty(const char* propName, const char* description) {
-        __NT_REQUIRE(StringHash::isValidHash(propName) && !hasDiscreteProperty(propName));
-        DiscreteProperty tmp = T();
-        m_DiscreteProperties[StringHash::hash(propName)] = std::make_tuple(String(propName), String(description), tmp);
-    }
-
-    template<class T>
     void addDiscreteProperty(const char* propName, const char* description, const T& defaultValue) {
         __NT_REQUIRE(StringHash::isValidHash(propName) && !hasDiscreteProperty(propName));
         DiscreteProperty tmp = defaultValue;
-        m_DiscreteProperties[StringHash::hash(propName)] = std::make_tuple(String(propName), String(description), tmp);
+        m_DiscreteProperties.emplace(StringHash::hash(propName), std::make_tuple(String(propName), String(description), tmp));
+    }
+
+    template<class T>
+    void addDiscreteProperty(const char* propName, const char* description) {
+        addDiscreteProperty<T>(propName, description, T());
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -164,7 +162,6 @@ public:
 
     void removeAt(size_t idx) {
         if(m_Properties.size() == 0) { return; }
-        assert(m_DataSize[hashVal] > idx);
         for(auto& kv: m_Properties) {
             kv.second->removeAt(idx);
         }
@@ -174,10 +171,10 @@ public:
 private:
     using DiscreteProperty = std::variant<bool, int, UInt, float, double, Vec2i, Vec2ui, Vec2f, Vec3i, Vec3ui, Vec3f, Vec4i, Vec4ui, Vec4d, String>;
 
-    String                                                                   m_Name;
-    size_t                                                                   m_DataSize;
-    std::unordered_map<size_t, PropertyBase*>                                m_Properties;
-    std::unordered_map<size_t, std::tuple<String, String, DiscreteProperty>> m_DiscreteProperties;
+    String                                                                 m_Name;
+    size_t                                                                 m_DataSize;
+    std::unordered_map<UInt, PropertyBase*>                                m_Properties;
+    std::unordered_map<UInt, std::tuple<String, String, DiscreteProperty>> m_DiscreteProperties;
 };
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -191,7 +188,7 @@ public:
     void addGroup(const char* groupName) {
         __NT_REQUIRE(StringHash::isValidHash(groupName) && !hasGroup(groupName));
         auto hashVal = StringHash::hash(groupName);
-        m_PropertyGroups[hashVal] = PropertyGroup(String(groupName));
+        m_PropertyGroups.emplace(hashVal, PropertyGroup(String(groupName)));
     }
 
     template<class T>
@@ -245,8 +242,8 @@ public:
     auto& getAllGroups() { return m_PropertyGroups; }
     const auto& getAllGroups() const { return m_PropertyGroups; }
 
-    auto& group(size_t group) { assert(hasGroup(group)); return m_PropertyGroups.at(group); }
-    const auto& group(size_t group) const { assert(hasGroup(group)); return m_PropertyGroups.at(group); }
+    auto& group(UInt group) { assert(hasGroup(group)); return m_PropertyGroups.at(group); }
+    const auto& group(UInt group) const { assert(hasGroup(group)); return m_PropertyGroups.at(group); }
 
     auto& group(const char* groupName) { return group(StringHash::hash(groupName)); }
     const auto& group(const char* groupName) const { return group(StringHash::hash(groupName)); }
@@ -257,7 +254,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    bool hasGroup(size_t group) const { return m_PropertyGroups.find(group) != m_PropertyGroups.end(); }
+    bool hasGroup(UInt group) const { return m_PropertyGroups.find(group) != m_PropertyGroups.end(); }
     bool hasGroup(const char* groupName) const { return hasGroup(StringHash::hash(groupName)); }
     bool hasProperty(const char* groupName, const char* propName) const {
         if(!hasGroup(groupName)) { return false; }
@@ -270,5 +267,5 @@ public:
     }
 
 private:
-    std::unordered_map<size_t, PropertyGroup> m_PropertyGroups;
+    std::unordered_map<UInt, PropertyGroup> m_PropertyGroups;
 };

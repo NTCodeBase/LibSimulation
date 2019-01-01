@@ -18,7 +18,11 @@
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class StringHash {
+    static constexpr const int8_t STRING_END_BYTE = 0;
+    static constexpr const UInt   STRING_BIT_SHIT = 5u;
+    static constexpr const UInt   STRING_HASH_KEY = 5381u;
 public:
+#if 0
     static constexpr size_t hash(const char* cstr) {
         size_t d = 5381lu;
         size_t i = 0lu;
@@ -26,6 +30,21 @@ public:
             d = d * 33lu + cstr[i++];
         }
         return d;
+    }
+
+#endif
+
+    static constexpr UInt hash(const char* pTail, UInt hash = STRING_HASH_KEY) {
+#if __cplusplus >= 201402L
+        while(*pTail != STRING_END_BYTE) {
+            hash = (hash << STRING_BIT_SHIT) + hash + (int32_t)*pTail;
+            pTail++;
+        }
+        return hash;
+#elif __cplusplus >= 201103L
+        return (pTail[0] == STRING_END_BYTE) ? hash :
+               hash_function(pTail + 1, ((hash << STRING_BIT_SHIT) + hash) + (int32_t)*pTail);
+#endif
     }
 
     static bool isValidHash(const char* cstr) {
@@ -41,5 +60,5 @@ public:
 private:
     ////////////////////////////////////////////////////////////////////////////////
     // helper variable to verify the validity of perfect string hashing
-    static inline std::unordered_map<size_t, String> s_HashedStrings;
+    static inline std::unordered_map<UInt, String> s_HashedStrings;
 };

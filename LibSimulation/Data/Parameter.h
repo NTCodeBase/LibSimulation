@@ -120,11 +120,11 @@ public:
     ////////////////////////////////////////////////////////////////////////////////
     const auto& getAllParameters() const { return m_Parameters; }
     const auto& getGroupParameters(const char* groupName) const { assert(hasGroup(groupName)); return m_Parameters.at(StringHash::hash(groupName)); }
-    const auto& getGroupParameters(size_t group) const { assert(hasGroup(group)); return m_Parameters.at(group); }
+    const auto& getGroupParameters(UInt group) const { assert(hasGroup(group)); return m_Parameters.at(group); }
 
     auto getGroupNameWithParams(const char* groupName) const {
         auto group = StringHash::hash(groupName); assert(hasGroup(group));
-        return std::pair<String, const std::unordered_map<size_t, Parameter>&>(m_GroupInfo.at(group).first, m_Parameters.at(group));
+        return std::pair<String, const std::unordered_map<UInt, Parameter>&>(m_GroupInfo.at(group).first, m_Parameters.at(group));
     }
 
     void removeGroup(const char* groupName) {
@@ -139,7 +139,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    bool hasGroup(size_t group) const { return m_Parameters.find(group) != m_Parameters.end(); }
+    bool hasGroup(UInt group) const { return m_Parameters.find(group) != m_Parameters.end(); }
     bool hasGroup(const char* groupName) const { return hasGroup(StringHash::hash(groupName)); }
     bool hasParmeter(const char* groupName, const char* paramName) const {
         if(!hasGroup(groupName)) { return false; }
@@ -150,8 +150,8 @@ public:
 private:
     ////////////////////////////////////////////////////////////////////////////////
     // store group data
-    std::unordered_map<size_t, std::pair<String, String>> m_GroupInfo;
+    std::unordered_map<UInt, std::pair<String, String>> m_GroupInfo;
 
     // store properties, index by hashes of groups then by hashes of property names
-    std::unordered_map<size_t, std::unordered_map<size_t, Parameter>> m_Parameters;
+    std::unordered_map<UInt, std::unordered_map<UInt, Parameter>> m_Parameters;
 };
