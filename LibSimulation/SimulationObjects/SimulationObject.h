@@ -41,10 +41,11 @@ public:
     auto& name() { return m_ObjName; }
     auto& geometry() { return m_GeometryObj; }
     ////////////////////////////////////////////////////////////////////////////////
-    virtual void initializeProperties() = 0;
+    //    virtual void initializeProperties() = 0;
     virtual void initializeParameters(const JParams& jParams);
-    virtual UInt generateParticles(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects, bool bIgnoreOverlapped = false) = 0;
     virtual bool updateObject(UInt frame, Real_t frameFraction, Real_t frameDuration);
+    virtual UInt generateParticles(PropertyGroup& propertyGroup, StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects,
+                                   bool bIgnoreOverlapped = false) = 0;
     ////////////////////////////////////////////////////////////////////////////////
     virtual bool            isInside(const VecN& ppos) const;
     virtual Real_t          signedDistance(const VecN& ppos) const;
@@ -64,13 +65,12 @@ protected:
     String                                 m_ObjName;
     ////////////////////////////////////////////////////////////////////////////////
     // internal geometry object
-    GeometryPtr m_GeometryObj     = nullptr;
-    bool        m_bNegativeInside = true;
+    GeometryPtr m_GeometryObj = nullptr;
     ////////////////////////////////////////////////////////////////////////////////
     // particle file cache parameters
-    bool       m_bUseFileCache    = false;
-    String     m_ParticleFile     = String("");
-    FileFormat m_ParticleFileType = FileFormat::BNN;
+    String     m_ParticleFile  = String("");
+    FileFormat m_FileFormat    = FileFormat::BNN;
+    bool       m_bUseFileCache = false;
     ////////////////////////////////////////////////////////////////////////////////
 };
 
