@@ -34,18 +34,18 @@ public:
     ////////////////////////////////////////////////////////////////////////////////
     template<class Input> void set(const Input& val) { m_Data = val; }
     template<class Output> Output& get() { assert(std::holds_alternative<Output>(m_Data)); return std::get<Output>(m_Data); }
-    template<class Output> Output get() const { assert(std::holds_alternative<Output>(m_Data)); return std::get<Output>(m_Data); }
+    template<class Output> const Output& get() const { assert(std::holds_alternative<Output>(m_Data)); return std::get<Output>(m_Data); }
     ////////////////////////////////////////////////////////////////////////////////
     template<class Input> void parseRequiredValue(const JParams& jParams) { __NT_REQUIRE(parseValue<Input>(jParams)); }
     template<class Input> bool parseValue(const JParams& jParams) {
         assert(std::holds_alternative<Input>(m_Data));
-        if constexpr(std::is_same_v<Input, bool>) {
+        if constexpr (std::is_same_v<Input, bool>) {
             bool& bVal = std::get<bool>(m_Data);
             return JSONHelpers::readBool(jParams, bVal, m_ParamName);
         } else {
-            if constexpr(std::is_same_v<Input, int>|| std::is_same_v<Input, UInt>
-                         || std::is_same_v<Input, float>|| std::is_same_v<Input, double>
-                         || std::is_same_v<Input, String>) {
+            if constexpr (std::is_same_v<Input, int>|| std::is_same_v<Input, UInt>
+                          || std::is_same_v<Input, float>|| std::is_same_v<Input, double>
+                          || std::is_same_v<Input, String>) {
                 Input& val = std::get<Input>(m_Data);
                 return JSONHelpers::readValue(jParams, val, m_ParamName);
             } else {
