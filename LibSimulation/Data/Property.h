@@ -13,7 +13,10 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 #pragma once
+
 #include <LibSimulation/Data/StringHash.h>
+#include <type_traits>
+#include <variant>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class PropertyBase {
@@ -78,9 +81,9 @@ public:
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////////
     const auto& name() const { return m_Name; }
 
+    ////////////////////////////////////////////////////////////////////////////////
     template<class T>
     void addProperty(const char* propName, const char* description) {
         __NT_REQUIRE(StringHash::isValidHash(propName) && !hasProperty(propName));
@@ -242,8 +245,8 @@ public:
     auto& getAllGroups() { return m_PropertyGroups; }
     const auto& getAllGroups() const { return m_PropertyGroups; }
 
-    auto& group(UInt group) { assert(hasGroup(group)); return m_PropertyGroups.at(group); }
-    const auto& group(UInt group) const { assert(hasGroup(group)); return m_PropertyGroups.at(group); }
+    auto& group(UInt groupHash) { assert(hasGroup(groupHash)); return m_PropertyGroups.at(groupHash); }
+    const auto& group(UInt groupHash) const { assert(hasGroup(groupHash)); return m_PropertyGroups.at(groupHash); }
 
     auto& group(const char* groupName) { return group(StringHash::hash(groupName)); }
     const auto& group(const char* groupName) const { return group(StringHash::hash(groupName)); }
@@ -254,7 +257,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    bool hasGroup(UInt group) const { return m_PropertyGroups.find(group) != m_PropertyGroups.end(); }
+    bool hasGroup(UInt groupHash) const { return m_PropertyGroups.find(groupHash) != m_PropertyGroups.end(); }
     bool hasGroup(const char* groupName) const { return hasGroup(StringHash::hash(groupName)); }
     bool hasProperty(const char* groupName, const char* propName) const {
         if(!hasGroup(groupName)) { return false; }
