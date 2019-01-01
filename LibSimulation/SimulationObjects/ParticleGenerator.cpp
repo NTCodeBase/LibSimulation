@@ -18,10 +18,7 @@
 #include <LibCommon/Utils/NumberHelpers.h>
 #include <LibCommon/Logger/Logger.h>
 
-#include <Simulation/Solvers/SolverData/SolverData.h>
-
-#include <Simulation/SimulationObjects/RigidBody.h>
-#include <Simulation/SimulationObjects/ParticleGenerator.h>
+#include <LibSimulation/SimulationObjects/ParticleGenerator.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 namespace SimulationObjects {
@@ -53,8 +50,7 @@ void ParticleGenerator<N, Real_t>::printParameters(Logger& logger) {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-UInt ParticleGenerator<N, Real_t>::generateParticles(ParticleSolvers::SolverData<N, Real_t>& solverData,
-                                                     StdVT<SharedPtr<RigidBody<N, Real_t>>>& rigidBodies) {
+UInt ParticleGenerator<N, Real_t>::generateParticles(StdVT<SharedPtr<RigidBody<N, Real_t>>>& rigidBodies) {
     __NT_REQUIRE(simParams("ParticleRadius").get<Real_t>() > 0);
     StdVT_VecN newPositions = generateParticles(simParams("ParticleRadius").get<Real_t>(), rigidBodies);
     Scheduler::parallel_for(newPositions.size(),

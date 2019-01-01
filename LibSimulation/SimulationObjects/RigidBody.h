@@ -22,20 +22,25 @@ template<Int N, class Real_t>
 class RigidBody : public SimulationObject<N, Real_t> {
     ////////////////////////////////////////////////////////////////////////////////
     __NT_TYPE_ALIAS
-    const Parameter& simParams(const char* paramName) const { return this->m_ParameterManager.parameter("SimulationParameters", paramName); }
     ////////////////////////////////////////////////////////////////////////////////
 public:
     RigidBody() = delete;
-    RigidBody(const JParams& jParams_, ParameterManager& parameterManager_, PropertyManager& propertyManager_) :
-        SimulationObject<N, Real_t>(jParams_, parameterManager_, propertyManager_) { parseBoundaryParameters(jParams_); }
+    RigidBody(const JParams& jParams_, const SharedPtr<Logger>& logger_, ParameterManager& parameterManager_, PropertyManager& propertyManager_) :
+        SimulationObject<N, Real_t>(jParams_, logger_, parameterManager_, propertyManager_) { initializeParameters(jParams_); }
     ////////////////////////////////////////////////////////////////////////////////
-    virtual void printParameters(Logger& logger) override;
-    virtual UInt generateParticles(ParticleSolvers::SolverData<N, Real_t>& solverData,
-                                   StdVT<SharedPtr<RigidBody<N, Real_t>>>& rigidBodies) override;
-    virtual bool updateObject(ParticleSolvers::SolverData<N, Real_t>& solverData, UInt frame, Real_t frameFraction, Real_t frameDuration) override;
+    virtual void initializeParameters(const JParams& jParams) override;
+    virtual void initializeProperties() override;
+    virtual UInt generateParticles(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects, bool bIgnoreOverlapped = false) override;
+    ////////////////////////////////////////////////////////////////////////////////
+    virtual bool            isInside(const VecN& ppos) const override;
+    virtual Real_t          signedDistance(const VecN& ppos) const override;
+    virtual VecX<N, Real_t> gradSignedDistance(const VecN& ppos, Real_t dxyz = Real_t(1e-4)) const override;
+    //
+    //
+
     ////////////////////////////////////////////////////////////////////////////////
     bool isCollisionObject() const { return m_bIsCollisionObject; }
-    bool findConstrainedParticles(ParticleSolvers::SolverData<N, Real_t>& solverData);
+    bool findConstrainedParticles();
     auto getNConstrainedParticles() const { return std::make_tuple(m_ConstrainedStandardParticlesIdx.size(), m_ConstrainedVertexParticlesIdx.size(), m_ConstrainedQuadParticlesIdx.size()); }
     bool resolveCollision(VecN& ppos, VecN& pvel, Real_t timestep);                   // return true if pvel has been modified
     bool resolveCollisionVelocityOnly(const VecN& ppos, VecN& pvel, Real_t timestep); // return true if pvel has been modified
@@ -43,9 +48,9 @@ public:
 protected:
     void parseBoundaryParameters(const JParams& jParams);
     ////////////////////////////////////////////////////////////////////////////////
-    void updateGhostParticles(ParticleSolvers::SolverData<N, Real_t>& solverData);
-    void resetConstrainedParticles(ParticleSolvers::SolverData<N, Real_t>& solverData);
-    void updateConstrainParticles(ParticleSolvers::SolverData<N, Real_t>& solverData, UInt frame, Real_t frameFraction, Real_t frameDuration);
+    void updateGhostParticles();
+    void resetConstrainedParticles();
+    void updateConstrainParticles(UInt frame, Real_t frameFraction, Real_t frameDuration);
     ////////////////////////////////////////////////////////////////////////////////
     inline void updatePositionVelocity(VecN& ppos_t0, VecN& ppos, VecN& pvel, Real_t timestep);
     inline VecN getObjectVelocity(const VecN& ppos, Real_t timestep);
@@ -58,9 +63,9 @@ protected:
     inline bool resolveCollisionVelocityOnly_SlipBC(const VecN& ppos, VecN& pvel, Real_t timestep);
     inline bool resolveCollisionVelocityOnly_SeparateBC(const VecN& ppos, VecN& pvel, Real_t timestep);
     ////////////////////////////////////////////////////////////////////////////////
-    bool                  m_bIsCollisionObject    = true;
-    BoundaryConditionType m_BoundaryConditionType = BoundaryConditionType::Slip;
-    Real_t                m_BoundaryFriction      = Real_t(0);
+    bool              m_bIsCollisionObject    = true;
+    BoundaryCondition m_BoundaryConditionType = BoundaryCondition::Slip;
+    Real_t            m_BoundaryFriction      = Real_t(0);
 
     bool   m_bGenerateGhostParticle           = true;
     Real_t m_ParticleGenerationThicknessRatio = HugeReal();

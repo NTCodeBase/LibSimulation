@@ -20,9 +20,7 @@
 #include <LibParticle/ParticleHelpers.h>
 #include <LibParticle/ParticleSerialization.h>
 
-#include <Simulation/Solvers/SolverData/SolverData.h>
-
-#include <Simulation/SimulationObjects/RigidBody.h>
+#include <LibSimulation/SimulationObjects/RigidBody.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 namespace SimulationObjects {
@@ -80,8 +78,7 @@ void RigidBody<N, Real_t>::printParameters(Logger& logger) {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-UInt RigidBody<N, Real_t>::generateParticles(ParticleSolvers::SolverData<N, Real_t>& solverData,
-                                             StdVT<SharedPtr<RigidBody<N, Real_t>>>& rigidBodies) {
+UInt RigidBody<N, Real_t>::generateParticles(StdVT<SharedPtr<RigidBody<N, Real_t>>>& rigidBodies) {
     __NT_UNUSED(rigidBodies);
     __NT_REQUIRE(m_GeneratedParticles.size() == 0);
     if(!m_bGenerateGhostParticle) {
@@ -137,7 +134,7 @@ UInt RigidBody<N, Real_t>::generateParticles(ParticleSolvers::SolverData<N, Real
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-bool RigidBody<N, Real_t>::updateObject(ParticleSolvers::SolverData<N, Real_t>& solverData, UInt frame, Real_t frameFraction, Real_t frameDuration) {
+bool RigidBody<N, Real_t>::updateObject(UInt frame, Real_t frameFraction, Real_t frameDuration) {
     if(this->m_GeometryObj->updateTransformation(frame, frameFraction)) {
         tbb::parallel_invoke(
             [&] {
@@ -160,7 +157,7 @@ bool RigidBody<N, Real_t>::updateObject(ParticleSolvers::SolverData<N, Real_t>& 
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-void RigidBody<N, Real_t>::updateGhostParticles(ParticleSolvers::SolverData<N, Real_t>& solverData) {
+void RigidBody<N, Real_t>::updateGhostParticles() {
     const auto& range        = m_RangeGeneratedGhostParticles; // [start, end)
     const auto& positions_t0 = m_GeneratedParticles;
     __NT_REQUIRE(positions_t0.size() + range[0] == range[1] && range[1] <= solverData.ghostParticleData.positions.size());
@@ -173,7 +170,7 @@ void RigidBody<N, Real_t>::updateGhostParticles(ParticleSolvers::SolverData<N, R
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-void RigidBody<N, Real_t>::resetConstrainedParticles(ParticleSolvers::SolverData<N, Real_t>& solverData) {
+void RigidBody<N, Real_t>::resetConstrainedParticles() {
     auto resetVelocities = [&](auto& particleIdx, auto& particleData) {
                                if(particleIdx.size() == 0) { return; }
                                for(size_t idx = 0; idx < particleIdx.size(); ++idx) {
@@ -197,7 +194,7 @@ void RigidBody<N, Real_t>::resetConstrainedParticles(ParticleSolvers::SolverData
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-void RigidBody<N, Real_t>::updateConstrainParticles(ParticleSolvers::SolverData<N, Real_t>& solverData, UInt frame, Real_t frameFraction, Real_t frameDuration) {
+void RigidBody<N, Real_t>::updateConstrainParticles(UInt frame, Real_t frameFraction, Real_t frameDuration) {
     auto updatePositionsVelocities = [&](auto& particleIdx, auto& positions_t0, auto& particleData, auto dT) {
                                          assert(dT > 0);
                                          if(particleIdx.size() == 0) { return; }
@@ -265,7 +262,25 @@ inline VecX<N, Real_t> RigidBody<N, Real_t>::getObjectVelocity(const VecN& ppos,
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-bool RigidBody<N, Real_t>::findConstrainedParticles(ParticleSolvers::SolverData<N, Real_t>& solverData) {
+bool RigidBody<N, Real_t>::isInside(const VecN& ppos) const {
+    return m_GeometryObj->isInside(ppos, false);
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+template<Int N, class Real_t>
+Real_t RigidBody<N, Real_t>::signedDistance(const VecN& ppos) const {
+    return m_GeometryObj->signedDistance(ppos, false);
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+template<Int N, class Real_t>
+VecX<N, Real_t> RigidBody<N, Real_t>::gradSignedDistance(const VecN& ppos, Real_t dxyz /*= Real_t(1e-4)*/) const {
+    return m_GeometryObj->gradSignedDistance(ppos, false, dxyz);
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+template<Int N, class Real_t>
+bool RigidBody<N, Real_t>::findConstrainedParticles() {
     if(!m_bConstrainInsideParticles) {
         return false;
     }

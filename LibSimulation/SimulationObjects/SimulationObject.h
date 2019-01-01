@@ -18,6 +18,7 @@
 #include <LibCommon/Geometry/GeometryObjects.h>
 
 #include <LibSimulation/Constants.h>
+#include <LibSimulation/Macros.h>
 #include <LibSimulation/Data/Parameter.h>
 #include <LibSimulation/Data/Property.h>
 
@@ -29,7 +30,7 @@ namespace SimulationObjects {
 template<Int N, class Real_t>
 class SimulationObject {
     ////////////////////////////////////////////////////////////////////////////////
-    __NT_TYPE_ALIAS
+    __NT_TYPE_ALIAS __NT_DECLARE_PARTICLE_SOLVER_ACCESSORS
     using GeometryPtr = SharedPtr<GeometryObjects::GeometryObject<N, Real_t>>;
     ////////////////////////////////////////////////////////////////////////////////
 public:
@@ -40,15 +41,14 @@ public:
     auto& name() { return m_ObjName; }
     auto& geometry() { return m_GeometryObj; }
     ////////////////////////////////////////////////////////////////////////////////
-    auto signedDistance(const VecN& ppos) const { return m_GeometryObj->signedDistance(ppos, m_bNegativeInside); }
-    auto gradSignedDistance(const VecN& ppos, Real_t dxyz = Real_t(1e-4)) const { return m_GeometryObj->gradSignedDistance(ppos, m_bNegativeInside, dxyz); }
-    auto isInside(const VecN& ppos) const { return m_GeometryObj->isInside(ppos, m_bNegativeInside); }
-    ////////////////////////////////////////////////////////////////////////////////
-    virtual void initializeParameters(const JParams& jParams);
     virtual void initializeProperties() = 0;
+    virtual void initializeParameters(const JParams& jParams);
     virtual UInt generateParticles(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects, bool bIgnoreOverlapped = false) = 0;
+    virtual bool updateObject(UInt frame, Real_t frameFraction, Real_t frameDuration);
     ////////////////////////////////////////////////////////////////////////////////
-    bool updateObject(UInt frame, Real_t frameFraction, Real_t frameDuration);
+    virtual bool            isInside(const VecN& ppos) const;
+    virtual Real_t          signedDistance(const VecN& ppos) const;
+    virtual VecX<N, Real_t> gradSignedDistance(const VecN& ppos, Real_t dxyz = Real_t(1e-4)) const;
 
 protected:
     bool loadParticlesFromFile(StdVT_VecN& positions);
