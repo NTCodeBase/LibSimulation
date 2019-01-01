@@ -50,8 +50,8 @@ protected:
     virtual void   createParticleGenerators(const JParams& jParams)     = 0;
     virtual void   createRigidBodyObjects(const JParams& jParams);
     virtual bool   updateSimulationObjects();
-    virtual void   generateParticles();
-    virtual void   advanceFrame() = 0;
+    virtual void   generateParticles() = 0;
+    virtual void   advanceFrame()      = 0;
     ////////////////////////////////////////////////////////////////////////////////
     void setupLogger();
     void initializeGlobalParameters(const JParams& jParams);

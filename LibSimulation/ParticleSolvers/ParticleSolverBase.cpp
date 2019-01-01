@@ -321,7 +321,7 @@ void ParticleSolverBase<N, Real_t>::createRigidBodyObjects(const JParams& jParam
     Timer timer;
     if constexpr(N == 2) { // for 2D only: generate the ghost particles for the entire domain box
         timer.tick();
-        auto nGen = m_RigidBodies.front()->generateParticles(m_SimulationObjects);
+        auto nGen = m_RigidBodies.front()->generateParticles(boundaryParticleData(), this->m_SimulationObjects);
         timer.tock();
         if(nGen > 0) {
             logger().printLog(String("Generated ") + Formatters::toString(nGen) + String(" particles by rigid body object: ") + m_RigidBodies.front()->name() +
@@ -333,7 +333,7 @@ void ParticleSolverBase<N, Real_t>::createRigidBodyObjects(const JParams& jParam
         for(auto& jObj : jParams["RigidBodies"]) {
             auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>(jObj, m_Logger, m_ParameterManager, m_PropertyManager);
             timer.tick();
-            auto nGen = obj->generateParticles(m_SimulationObjects);
+            auto nGen = m_RigidBodies.front()->generateParticles(boundaryParticleData(), this->m_SimulationObjects);
             timer.tock();
             if(nGen > 0) {
                 logger().printLog(String("Generated ") + Formatters::toString(nGen) + String(" particles by rigid body object: ") + obj->name() +
@@ -360,23 +360,6 @@ bool ParticleSolverBase<N, Real_t>::updateSimulationObjects() {
         }
     }
     return bSceneChanged;
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-template<Int N, class Real_t>
-void ParticleSolverBase<N, Real_t>::generateParticles() {
-    Timer timer;
-    for(auto& generator : m_ParticleGenerators) {
-        timer.tick();
-        auto nGen = generator->generateParticles(m_SimulationObjects);
-        timer.tock();
-        if(nGen == 0) {
-            logger().printWarning(String("Particles generator '") + generator->name() + String("' could not generate any particles!"));
-        } else {
-            logger().printLog(String("Generated ") + Formatters::toString(nGen) + String(" particles by standard particle generator: ") + generator->name() +
-                              String(" (") + timer.getRunTime() + String(")"));
-        }
-    }
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
