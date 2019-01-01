@@ -15,13 +15,11 @@
 #pragma once
 
 #include <LibCommon/CommonSetup.h>
+
+#include <LibSimulation/Forward.h>
+#include <LibSimulation/Macros.h>
 #include <LibSimulation/Data/Parameter.h>
 #include <LibSimulation/Data/Property.h>
-
-#include <LibSimulation/SimulationObjects/SimulationObject.h>
-#include <LibSimulation/SimulationObjects/ParticleGenerator.h>
-
-#include <Simulation/Solvers/SolverData/SolverData.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 namespace ParticleSolvers {
@@ -29,7 +27,7 @@ namespace ParticleSolvers {
 template<Int N, class Real_t>
 class ParticleSolverBase {
     ////////////////////////////////////////////////////////////////////////////////
-    __NT_TYPE_ALIAS
+    __NT_TYPE_ALIAS __NT_DECLARE_PARTICLE_SOLVER_ACCESSORS
     ////////////////////////////////////////////////////////////////////////////////
 public:
     using SolverRealType = Real_t;
@@ -42,15 +40,12 @@ public:
     void doSimulation();
     void advanceFrame(UInt frame);
     void finalizeSimulation();
-    ////////////////////////////////////////////////////////////////////////////////
-    __NT_DECLARE_DATA_ACCESSORS
-    SolverData<N, Real_t> m_SolverData;
 
 protected:
-    virtual String getSolverName()        = 0;
-    virtual String getSolverDescription() = 0;
-    virtual void   initializeSimulationParameters(const JParams& jParams);
+    virtual String getSolverName()                  = 0;
+    virtual String getSolverDescription()           = 0;
     virtual void   initializeSimulationProperties() = 0;
+    virtual void   initializeSimulationParameters(const JParams& jParams);
     virtual void   initializeIntegrationObjects(const JParams& jParams) = 0;
     virtual void   createParticleGenerators(const JParams& jParams)     = 0;
     virtual void   createRigidBodyObjects(const JParams& jParams);

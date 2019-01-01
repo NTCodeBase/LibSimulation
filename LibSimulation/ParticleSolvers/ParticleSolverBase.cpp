@@ -16,14 +16,10 @@
 #include <LibCommon/Utils/JSONHelpers.h>
 
 #include <LibParticle/ParticleSerialization.h>
+
 #include <LibSimulation/SimulationObjects/RigidBody.h>
 #include <LibSimulation/SimulationObjects/ParticleGenerator.h>
-#include <Simulation/HairGenerators/StrandGenerator.h>
-#include <Simulation/HairGenerators/HairOnBall.h>
-#include <Simulation/HairGenerators/HairOnMesh.h>
-
-#include <Simulation/Solvers/SolverData/DataManager.h>
-#include <Simulation/Solvers/ParticleSolverBase.h>
+#include <LibSimulation/ParticleSolvers/ParticleSolverBase.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 namespace ParticleSolvers {
@@ -77,7 +73,9 @@ JParams ParticleSolverBase<N, Real_t>::loadScene(const String& sceneFile) {
     {
         JParams jSimParams = jSceneParams["SimulationParameters"];
         initializeSimulationParameters(jSimParams);
-        m_SolverData.makeReady(m_ParameterManager);
+
+        // todo: rewrite this
+        //        m_SolverData.makeReady(m_ParameterManager);
         ////////////////////////////////////////////////////////////////////////////////
         initializeIntegrationObjects(jSimParams);
         logger().separatorLine(1);
@@ -159,9 +157,8 @@ void ParticleSolverBase<N, Real_t>::initializeSimulationParameters(const JParams
         JParams jBoxParams = jParams["DomainBox"];
         jBoxParams["GeometryType"] = String("Box");
 
-        auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>(jBoxParams, m_ParameterManager, m_PropertyManager);
+        auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>(jBoxParams, m_Logger, m_ParameterManager, m_PropertyManager);
         obj->name() = String("DomainBox");
-        obj->isNegativeInside() = false; // must be false for the simulation domain box
         m_RigidBodies.push_back(obj);
 
         auto box = std::dynamic_pointer_cast<GeometryObjects::BoxObject<N, Real_t>>(obj->geometry());
@@ -322,29 +319,26 @@ template<Int N, class Real_t>
 void ParticleSolverBase<N, Real_t>::createRigidBodyObjects(const JParams& jParams) {
     __NT_REQUIRE(m_RigidBodies.size() == 1);
     Timer timer;
-    m_RigidBodies.front()->printParameters(logger());
     if constexpr(N == 2) { // for 2D only: generate the ghost particles for the entire domain box
         timer.tick();
-        auto nGen = m_RigidBodies.front()->generateParticles(solverData(), m_RigidBodies);
+        auto nGen = m_RigidBodies.front()->generateParticles(m_SimulationObjects);
         timer.tock();
         if(nGen > 0) {
             logger().printLog(String("Generated ") + Formatters::toString(nGen) + String(" particles by rigid body object: ") + m_RigidBodies.front()->name() +
                               String(" (") + timer.getRunTime() + String(")"));
         }
-        m_RigidBodies.front()->printParameters(logger());
     }
     ////////////////////////////////////////////////////////////////////////////////
     if(jParams.find("RigidBodies") != jParams.end()) {
         for(auto& jObj : jParams["RigidBodies"]) {
-            auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>(jObj, m_ParameterManager, m_PropertyManager);
+            auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>(jObj, m_Logger, m_ParameterManager, m_PropertyManager);
             timer.tick();
-            auto nGen = obj->generateParticles(solverData(), m_RigidBodies);
+            auto nGen = obj->generateParticles(m_SimulationObjects);
             timer.tock();
             if(nGen > 0) {
                 logger().printLog(String("Generated ") + Formatters::toString(nGen) + String(" particles by rigid body object: ") + obj->name() +
                                   String(" (") + timer.getRunTime() + String(")"));
             }
-            obj->printParameters(logger());
             m_RigidBodies.emplace_back(std::move(obj));
         }
     }
@@ -360,7 +354,7 @@ bool ParticleSolverBase<N, Real_t>::updateSimulationObjects() {
     bool bSceneChanged = false;
     if(m_SimulationObjects.size() > 0) {
         for(auto& obj : m_SimulationObjects) {
-            bSceneChanged |= obj->updateObject(solverData(), globalParams("FinishedFrame").get<UInt>() + 1u, /* current frame is 1-based */
+            bSceneChanged |= obj->updateObject(globalParams("FinishedFrame").get<UInt>() + 1u, /* current frame is 1-based */
                                                globalParams("FrameLocalTime").get<Real_t>() / globalParams("FrameDuration").get<Real_t>(),
                                                globalParams("FrameDuration").get<Real_t>());
         }
@@ -374,7 +368,7 @@ void ParticleSolverBase<N, Real_t>::generateParticles() {
     Timer timer;
     for(auto& generator : m_ParticleGenerators) {
         timer.tick();
-        auto nGen = generator->generateParticles(solverData(), m_RigidBodies);
+        auto nGen = generator->generateParticles(m_SimulationObjects);
         timer.tock();
         if(nGen == 0) {
             logger().printWarning(String("Particles generator '") + generator->name() + String("' could not generate any particles!"));
@@ -382,20 +376,7 @@ void ParticleSolverBase<N, Real_t>::generateParticles() {
             logger().printLog(String("Generated ") + Formatters::toString(nGen) + String(" particles by standard particle generator: ") + generator->name() +
                               String(" (") + timer.getRunTime() + String(")"));
         }
-        generator->printParameters(logger());
     }
-    //    for(auto& generator : m_StrandGenerators) {
-    //        timer.tick();
-    //        auto nGen = generator->generateParticles(solverParams(), solverData(), m_RigidBodies);
-    //        timer.tock();
-    //        if(nGen == 0) {
-    //            logger().printWarning(String("Strand generator '") + generator->name() + String("' could not generate any particles!"));
-    //        } else {
-    //            logger().printLog(String("Generated ") + Formatters::toString(nGen) + String(" particles by strand generator: ") + generator->name() +
-    //                              String(" (") + timer.getRunTime() + String(")"));
-    //        }
-    //        generator->printParameters(logger());
-    //    }
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
