@@ -112,14 +112,14 @@ public:
     template<class T>
     const Property<T>& property(const char* propName) const {
         assert(hasProperty(propName));
-        auto propPtr = m_Properties[StringHash::hash(propName)];
-        assert(propPtr != nullptr && dynamic_cast<Property<T>*>(propPtr) != nullptr);
+        const auto propPtr = m_Properties.at(StringHash::hash(propName));
+        assert(propPtr != nullptr && dynamic_cast<const Property<T>*>(propPtr) != nullptr);
         return static_cast<const Property<T>&>(*propPtr);
     }
 
     template<class T>
     Property<T>& property(const char* propName) {
-        return const_cast<Property<T>&>(static_cast<const PropertyGroup&>(*this).property(propName));
+        return const_cast<Property<T>&>(static_cast<const PropertyGroup&>(*this).property<T>(propName));
     }
 
     template<class T>
@@ -197,48 +197,48 @@ public:
     template<class T>
     void addProperty(const char* groupName, const char* description, const char* propName) {
         __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
-        m_PropertyGroups[StringHash::hash(groupName)].addProperty(propName, description);
+        m_PropertyGroups[StringHash::hash(groupName)].addProperty<T>(propName, description);
     }
 
     template<class T>
     void addProperty(const char* groupName, const char* propName, const char* description,  const T& defaultValue) {
         __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
-        m_PropertyGroups[StringHash::hash(groupName)].addProperty(propName, description, defaultValue);
+        m_PropertyGroups[StringHash::hash(groupName)].addProperty<T>(propName, description, defaultValue);
     }
 
     template<class T>
     void addDiscreteProperty(const char* groupName, const char* description, const char* propName) {
         __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
-        m_PropertyGroups[StringHash::hash(groupName)].addDiscreteProperty(propName, description);
+        m_PropertyGroups[StringHash::hash(groupName)].addDiscreteProperty<T>(propName, description);
     }
 
     template<class T>
     void addDiscreteProperty(const char* groupName, const char* propName, const char* description,  const T& defaultValue) {
         __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
-        m_PropertyGroups[StringHash::hash(groupName)].addDiscreteProperty(propName, description, defaultValue);
+        m_PropertyGroups[StringHash::hash(groupName)].addDiscreteProperty<T>(propName, description, defaultValue);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     template<class T>
     const Property<T>& property(const char* groupName, const char* propName) const {
         __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
-        return m_PropertyGroups[StringHash::hash(groupName)].property(propName);
+        return m_PropertyGroups[StringHash::hash(groupName)].property<T>(propName);
     }
 
     template<class T>
     Property<T>& property(const char* groupName, const char* propName) {
-        return const_cast<Property<T>&>(static_cast<const PropertyManager&>(*this).property(groupName, propName));
+        return const_cast<Property<T>&>(static_cast<const PropertyManager&>(*this).property<T>(groupName, propName));
     }
 
     template<class T>
     const T& discreteProperty(const char* groupName, const char* propName) const {
         __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
-        return m_PropertyGroups[StringHash::hash(groupName)].discreteProperty(propName);
+        return m_PropertyGroups[StringHash::hash(groupName)].discreteProperty<T>(propName);
     }
 
     template<class T>
     T& discreteProperty(const char* groupName, const char* propName) {
-        return const_cast<T&>(static_cast<const PropertyManager&>(*this).discreteProperty(groupName, propName));
+        return const_cast<T&>(static_cast<const PropertyManager&>(*this).discreteProperty<T>(groupName, propName));
     }
 
     ////////////////////////////////////////////////////////////////////////////////

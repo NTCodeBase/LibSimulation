@@ -25,9 +25,6 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class Parameter {
 public:
-    Parameter() { throw std::exception("This should not be reach!"); }
-    virtual ~Parameter() {}
-
     Parameter(const String& groupName, const String& paramName, const String& paramDesc) :
         m_Group(groupName), m_Name(paramName), m_Description(paramDesc) {}
     ////////////////////////////////////////////////////////////////////////////////
@@ -131,57 +128,44 @@ public:
         m_ParameterGroups.emplace(hashVal, ParameterGroup(String(groupName), String(groupDesc)));
     }
 
-    UInt addAnonymousGroup(const char* groupDesc) {
-        auto groupHash = NumberHelpers::iRand<UInt>::rnd();
-        while(hasGroup(groupHash)) {
-            groupHash = NumberHelpers::iRand<UInt>::rnd();
-        }
-        m_ParameterGroups.emplace(groupHash, ParameterGroup(std::to_string(groupHash), String(groupDesc)));
-        return groupHash;
-    }
-
     ////////////////////////////////////////////////////////////////////////////////
     template<class Input>
-    Parameter& addParameter(UInt groupHash, const char* paramName, const char* description, const Input& defaultValue) {
-        __NT_REQUIRE(hasGroup(groupHash));
-        return m_ParameterGroups.at(groupHash).addParameter(paramName, description, defaultValue);
+    Parameter& addParameter(const char* groupName, const char* paramName, const char* description, const Input& defaultValue) {
+        __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
+        return m_ParameterGroups.at(StringHash::hash(groupName)).addParameter(paramName, description, defaultValue);
     }
 
     template<class Input>
-    Parameter& addParameter(UInt groupHash, const char* paramName, const char* description, const Input& defaultValue, const JParams& jParams,
+    Parameter& addParameter(const char* groupName, const char* paramName, const char* description, const Input& defaultValue, const JParams& jParams,
                             bool bRequiredInput = false) {
-        __NT_REQUIRE(hasGroup(groupHash));
-        return m_ParameterGroups.at(groupHash).addParameter(paramName, description, defaultValue, jParams, bRequiredInput);
-    }
-
-    template<class Input, class... Args>
-    Parameter& addParameter(const char* groupName, Args&& ... args) {
-        __NT_REQUIRE(StringHash::isValidHash(groupName));
-        return addParameter<Input>(StringHash::hash(groupName), std::forward<Args>(args)...);
+        __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
+        return m_ParameterGroups.at(StringHash::hash(groupName)).addParameter(paramName, description, defaultValue, jParams, bRequiredInput);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    Parameter& parameter(UInt groupHash, const char* paramName) {
-        assert(hasGroup(groupHash));
-        return m_ParameterGroups.at(groupHash).parameter(paramName);
+    Parameter& parameter(const char* groupName, const char* paramName) {
+        assert(hasGroup(groupName));
+        return m_ParameterGroups.at(StringHash::hash(groupName)).parameter(paramName);
     }
 
-    const Parameter& parameter(UInt groupHash, const char* paramName) const {
-        assert(hasGroup(groupHash));
-        return m_ParameterGroups.at(groupHash).parameter(paramName);
+    const Parameter& parameter(const char* groupName, const char* paramName) const {
+        assert(hasGroup(groupName));
+        return m_ParameterGroups.at(StringHash::hash(groupName)).parameter(paramName);
     }
 
-    Parameter& parameter(const char* groupName, const char* paramName) { return parameter(StringHash::hash(groupName), paramName); }
-    const Parameter& parameter(const char* groupName, const char* paramName) const { return parameter(StringHash::hash(groupName), paramName); }
     ////////////////////////////////////////////////////////////////////////////////
     auto& getAllGroups() { return m_ParameterGroups; }
     const auto& getAllGroups() const { return m_ParameterGroups; }
 
-    auto& group(UInt groupHash) { assert(hasGroup(groupHash)); return m_ParameterGroups.at(groupHash); }
-    const auto& group(UInt groupHash) const { assert(hasGroup(groupHash)); return m_ParameterGroups.at(groupHash); }
+    ParameterGroup& group(const char* groupName) {
+        assert(hasGroup(StringHash::hash(groupName)));
+        return m_ParameterGroups.at(StringHash::hash(groupName));
+    }
 
-    auto& group(const char* groupName) { return group(StringHash::hash(groupName)); }
-    const auto& group(const char* groupName) const { return group(StringHash::hash(groupName)); }
+    const ParameterGroup& group(const char* groupName) const {
+        assert(hasGroup(StringHash::hash(groupName)));
+        return m_ParameterGroups.at(StringHash::hash(groupName));
+    }
 
     void removeGroup(const char* groupName) {
         __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
@@ -191,12 +175,11 @@ public:
     ////////////////////////////////////////////////////////////////////////////////
     bool hasGroup(UInt groupHash) const { return m_ParameterGroups.find(groupHash) != m_ParameterGroups.end(); }
     bool hasGroup(const char* groupName) const { return hasGroup(StringHash::hash(groupName)); }
-    bool hasParmeter(UInt groupHash, const char* paramName) const {
+    bool hasParmeter(const char* groupName, const char* paramName) const {
+        auto groupHash = StringHash::hash(groupName);
         if(!hasGroup(groupHash)) { return false; }
-        return group(groupHash).hasParameter(paramName);
+        return m_ParameterGroups.at(groupHash).hasParameter(paramName);
     }
-
-    bool hasParmeter(const char* groupName, const char* paramName) const { return hasParmeter(StringHash::hash(groupName), paramName); }
 
 private:
     std::unordered_map<UInt, ParameterGroup> m_ParameterGroups;
