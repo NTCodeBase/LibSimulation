@@ -38,10 +38,11 @@ public:
     SimulationObject(const JParams& jParams_, const SharedPtr<Logger>& logger_, ParameterManager& parameterManager_, PropertyManager& propertyManager_);
     ////////////////////////////////////////////////////////////////////////////////
     // to remove
+    auto objID() const { return m_ObjID; }
+    auto& name() { return m_ObjName; }
+    auto& geometry() { return m_GeometryObj; }
     const auto& name() const { return m_ObjName; }
     const auto& geometry() const { return m_GeometryObj; }
-    auto& geometry() { return m_GeometryObj; }
-    auto objID() const { return m_ObjID; }
     ////////////////////////////////////////////////////////////////////////////////
     //    virtual void initializeProperties() = 0;
     virtual void initializeParameters(const JParams& jParams);
