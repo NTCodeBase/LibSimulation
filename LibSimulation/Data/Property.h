@@ -74,7 +74,7 @@ protected:
 class PropertyGroup {
 public:
     PropertyGroup() { throw std::exception("This place should not be reached!"); }
-    PropertyGroup(const String& name) : m_Name(name), m_DataSize(0) {}
+    PropertyGroup(const String& name, UInt hash) : m_Name(name), m_Hash(hash), m_DataSize(0) {}
     virtual ~PropertyGroup() {
         for(auto& [prop, propPtr]: m_Properties) {
             delete propPtr;
@@ -82,6 +82,7 @@ public:
     }
 
     const auto& name() const { return m_Name; }
+    auto hash() const { return m_Hash; }
 
     ////////////////////////////////////////////////////////////////////////////////
     template<class T>
@@ -174,6 +175,7 @@ public:
 private:
     using DiscreteProperty = std::variant<bool, int, UInt, float, double, Vec2i, Vec2ui, Vec2f, Vec3i, Vec3ui, Vec3f, Vec4i, Vec4ui, Vec4d, String>;
 
+    UInt                                                                   m_Hash;
     String                                                                 m_Name;
     size_t                                                                 m_DataSize;
     std::unordered_map<UInt, PropertyBase*>                                m_Properties;
@@ -191,7 +193,7 @@ public:
     void addGroup(const char* groupName) {
         __NT_REQUIRE(StringHash::isValidHash(groupName) && !hasGroup(groupName));
         auto hashVal = StringHash::hash(groupName);
-        m_PropertyGroups.emplace(hashVal, PropertyGroup(String(groupName)));
+        m_PropertyGroups.emplace(hashVal, PropertyGroup(String(groupName), hashVal));
     }
 
     template<class T>
