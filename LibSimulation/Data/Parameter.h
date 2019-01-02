@@ -35,6 +35,7 @@ public:
     template<class Input> void set(const Input& val) { m_Data = val; }
     template<class Output> Output& get() { assert(std::holds_alternative<Output>(m_Data)); return std::get<Output>(m_Data); }
     template<class Output> const Output& get() const { assert(std::holds_alternative<Output>(m_Data)); return std::get<Output>(m_Data); }
+    const char* getDataPtr() const { return std::visit([&](auto&& arg) { return reinterpret_cast<const char*>(&arg); }, m_Data); }
     ////////////////////////////////////////////////////////////////////////////////
     template<class Input> void parseRequiredValue(const JParams& jParams) { __NT_REQUIRE(parseValue<Input>(jParams)); }
     template<class Input> bool parseValue(const JParams& jParams) {

@@ -126,17 +126,35 @@ public:
     template<class T>
     const T& discreteProperty(const char* propName) const {
         assert(hasDiscreteProperty(propName));
-        const auto& tmp = m_DiscreteProperties[StringHash::hash(propName)].get<2>();
+        const auto& tmp = std::get<2>(m_DiscreteProperties.at(StringHash::hash(propName)));
         assert(std::holds_alternative<T>(tmp)); return std::get<T>(tmp);
     }
 
     template<class T>
     T& discreteProperty(const char* propName) {
-        return const_cast<T&>(static_cast<const PropertyGroup&>(*this).discreteProperty(propName));
+        return const_cast<T&>(static_cast<const PropertyGroup&>(*this).discreteProperty<T>(propName));
     }
 
-    bool hasProperty(const char* propName) const { return m_Properties.find(StringHash::hash(propName)) != m_Properties.cend(); }
-    bool hasDiscreteProperty(const char* propName) const { return m_DiscreteProperties.find(StringHash::hash(propName)) != m_DiscreteProperties.cend(); }
+    const char* propertyDataPtr(const char* propName) const {
+        if(UInt propHash = StringHash::hash(propName); hasProperty(propHash)) {
+            return m_Properties.at(propHash)->dataPtr();
+        } else {
+            return nullptr;
+        }
+    }
+
+    const char* discretePropertyDataPtr(const char* propName) const {
+        if(UInt propHash = StringHash::hash(propName); hasDiscreteProperty(propHash)) {
+            return std::visit([&](auto&& arg) { return reinterpret_cast<const char*>(&arg); }, std::get<2>(m_DiscreteProperties.at(propHash)));
+        } else {
+            return nullptr;
+        }
+    }
+
+    bool hasProperty(UInt propHash) const { return m_Properties.find(propHash) != m_Properties.cend(); }
+    bool hasProperty(const char* propName) const { return hasProperty(StringHash::hash(propName)); }
+    bool hasDiscreteProperty(UInt propHash) const { return m_DiscreteProperties.find(propHash) != m_DiscreteProperties.cend(); }
+    bool hasDiscreteProperty(const char* propName) const { return hasDiscreteProperty(StringHash::hash(propName)); }
     ////////////////////////////////////////////////////////////////////////////////
     const auto& properties() const { return m_Properties; }
     size_t size() const { return m_DataSize; }
