@@ -35,7 +35,8 @@ class SimulationObject {
     ////////////////////////////////////////////////////////////////////////////////
 public:
     SimulationObject() = delete;
-    SimulationObject(const JParams& jParams_, const SharedPtr<Logger>& logger_, ParameterManager& parameterManager_, PropertyManager& propertyManager_);
+    SimulationObject(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_,
+                     ParameterManager& parameterManager_, PropertyManager& propertyManager_);
     ////////////////////////////////////////////////////////////////////////////////
     // to remove
     auto objID() const { return m_ObjID; }
@@ -66,6 +67,7 @@ protected:
     static inline std::unordered_set<UInt> s_GeneratedObjIDs {};
     UInt                                   m_ObjID;
     String                                 m_ObjName;
+    String                                 m_Description;
     ////////////////////////////////////////////////////////////////////////////////
     // internal geometry object
     GeometryPtr m_GeometryObj = nullptr;

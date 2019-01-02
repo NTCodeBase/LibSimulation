@@ -25,9 +25,9 @@
 namespace SimulationObjects {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-SimulationObject<N, Real_t>::SimulationObject(const JParams& jParams_, const SharedPtr<Logger>& logger_,
+SimulationObject<N, Real_t>::SimulationObject(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_,
                                               ParameterManager& parameterManager_, PropertyManager& propertyManager_) :
-    m_Logger(logger_), m_ParameterManager(parameterManager_), m_PropertyManager(propertyManager_) {
+    m_Description(desc_), m_Logger(logger_), m_ParameterManager(parameterManager_), m_PropertyManager(propertyManager_) {
     ////////////////////////////////////////////////////////////////////////////////
     // internal geometry object
     String geometryType;
@@ -54,7 +54,7 @@ void SimulationObject<N, Real_t>::initializeParameters(const JParams& jParams) {
     if(!JSONHelpers::readValue(jParams, m_ObjName, "Name")) {
         m_ObjName = String("Object_") + std::to_string(m_ObjID);
     }
-    logger().printLog(String("Simulation object: ") + m_ObjName);
+    logger().printLog(m_Description + String(": ") + m_ObjName);
     logger().printLogIndent(String("Geometry: ") + m_GeometryObj->name());
     ////////////////////////////////////////////////////////////////////////////////
     // file cache parameters

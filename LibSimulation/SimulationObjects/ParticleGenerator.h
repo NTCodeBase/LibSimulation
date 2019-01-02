@@ -25,8 +25,9 @@ class ParticleGenerator : public SimulationObject<N, Real_t> {
     ////////////////////////////////////////////////////////////////////////////////
 public:
     ParticleGenerator() = delete;
-    ParticleGenerator(const JParams& jParams_, const SharedPtr<Logger>& logger_, ParameterManager& parameterManager_, PropertyManager& propertyManager_) :
-        SimulationObject<N, Real_t>(jParams_, logger_, parameterManager_, propertyManager_) { initializeParameters(jParams_); }
+    ParticleGenerator(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_,
+                      ParameterManager& parameterManager_, PropertyManager& propertyManager_) :
+        SimulationObject<N, Real_t>(desc_, jParams_, logger_, parameterManager_, propertyManager_) { initializeParameters(jParams_); }
     ////////////////////////////////////////////////////////////////////////////////
     virtual void initializeParameters(const JParams& jParams) override;
     virtual UInt generateParticles(PropertyGroup& propertyGroup, StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects,
