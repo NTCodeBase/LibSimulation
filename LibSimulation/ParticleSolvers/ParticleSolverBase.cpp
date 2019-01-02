@@ -157,7 +157,7 @@ void ParticleSolverBase<N, Real_t>::initializeSimulationParameters(const JParams
         JParams jBoxParams = jParams["DomainBox"];
         jBoxParams["GeometryType"] = String("Box");
 
-        auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>("Rigid body", jBoxParams, m_Logger, m_ParameterManager, m_PropertyManager);
+        auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>(jBoxParams, m_Logger, m_ParameterManager, m_PropertyManager);
         obj->name() = String("DomainBox");
         m_RigidBodies.push_back(obj);
 
@@ -333,7 +333,7 @@ void ParticleSolverBase<N, Real_t>::createRigidBodyObjects(const JParams& jParam
     ////////////////////////////////////////////////////////////////////////////////
     if(jParams.find("RigidBodies") != jParams.end()) {
         for(auto& jObj : jParams["RigidBodies"]) {
-            auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>("Rigid body", jObj, m_Logger, m_ParameterManager, m_PropertyManager);
+            auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>(jObj, m_Logger, m_ParameterManager, m_PropertyManager);
             if(propertyManager().hasGroup("BoundaryParticle")) {
                 timer.tick();
                 auto nGen = m_RigidBodies.front()->generateParticles(boundaryParticleData(), this->m_SimulationObjects, true);

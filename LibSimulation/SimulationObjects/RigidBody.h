@@ -26,9 +26,9 @@ class RigidBody : public SimulationObject<N, Real_t> {
     ////////////////////////////////////////////////////////////////////////////////
 public:
     RigidBody() = delete;
-    RigidBody(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_,
+    RigidBody(const JParams& jParams_, const SharedPtr<Logger>& logger_,
               ParameterManager& parameterManager_, PropertyManager& propertyManager_) :
-        SimulationObject<N, Real_t>(desc_, jParams_, logger_, parameterManager_, propertyManager_) { initializeParameters(jParams_); }
+        SimulationObject<N, Real_t>("Rigid body", jParams_, logger_, parameterManager_, propertyManager_) { initializeParameters(jParams_); }
     ////////////////////////////////////////////////////////////////////////////////
     virtual void initializeParameters(const JParams& jParams) override;
     virtual bool updateObject(UInt frame, Real_t frameFraction, Real_t timestep) override;
