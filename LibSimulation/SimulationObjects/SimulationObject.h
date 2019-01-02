@@ -17,7 +17,7 @@
 #include <LibCommon/CommonSetup.h>
 #include <LibCommon/Geometry/GeometryObjects.h>
 
-#include <LibSimulation/Constants.h>
+#include <LibSimulation/Enums.h>
 #include <LibSimulation/Macros.h>
 #include <LibSimulation/Data/Parameter.h>
 #include <LibSimulation/Data/Property.h>

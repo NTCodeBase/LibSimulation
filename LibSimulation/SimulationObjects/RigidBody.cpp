@@ -20,7 +20,7 @@
 #include <LibParticle/ParticleHelpers.h>
 #include <LibParticle/ParticleSerialization.h>
 
-#include <LibSimulation/Constants.h>
+#include <LibSimulation/Enums.h>
 #include <LibSimulation/SimulationObjects/RigidBody.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
