@@ -157,7 +157,7 @@ void ParticleSolverBase<N, Real_t>::initializeSimulationParameters(const JParams
         JParams jBoxParams = jParams["DomainBox"];
         jBoxParams["GeometryType"] = String("Box");
 
-        auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>(jBoxParams, m_Logger, m_ParameterManager, m_PropertyManager);
+        auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>("Rigid body", jBoxParams, m_Logger, m_ParameterManager, m_PropertyManager);
         obj->name() = String("DomainBox");
         m_RigidBodies.push_back(obj);
 
@@ -320,24 +320,28 @@ void ParticleSolverBase<N, Real_t>::createRigidBodyObjects(const JParams& jParam
     __NT_REQUIRE(m_RigidBodies.size() == 1);
     Timer timer;
     if constexpr(N == 2) { // for 2D only: generate the ghost particles for the entire domain box
-        timer.tick();
-        auto nGen = m_RigidBodies.front()->generateParticles(boundaryParticleData(), this->m_SimulationObjects);
-        timer.tock();
-        if(nGen > 0) {
-            logger().printLog(String("Generated ") + Formatters::toString(nGen) + String(" particles by rigid body object: ") + m_RigidBodies.front()->name() +
-                              String(" (") + timer.getRunTime() + String(")"));
+        if(propertyManager().hasGroup("BoundaryParticle")) {
+            timer.tick();
+            auto nGen = m_RigidBodies.front()->generateParticles(boundaryParticleData(), this->m_SimulationObjects, true);
+            timer.tock();
+            if(nGen > 0) {
+                logger().printLog(String("Generated ") + Formatters::toString(nGen) + String(" particles by rigid body object: ") +
+                                  m_RigidBodies.front()->name() + String(" (") + timer.getRunTime() + String(")"));
+            }
         }
     }
     ////////////////////////////////////////////////////////////////////////////////
     if(jParams.find("RigidBodies") != jParams.end()) {
         for(auto& jObj : jParams["RigidBodies"]) {
-            auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>(jObj, m_Logger, m_ParameterManager, m_PropertyManager);
-            timer.tick();
-            auto nGen = m_RigidBodies.front()->generateParticles(boundaryParticleData(), this->m_SimulationObjects);
-            timer.tock();
-            if(nGen > 0) {
-                logger().printLog(String("Generated ") + Formatters::toString(nGen) + String(" particles by rigid body object: ") + obj->name() +
-                                  String(" (") + timer.getRunTime() + String(")"));
+            auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>("Rigid body", jObj, m_Logger, m_ParameterManager, m_PropertyManager);
+            if(propertyManager().hasGroup("BoundaryParticle")) {
+                timer.tick();
+                auto nGen = m_RigidBodies.front()->generateParticles(boundaryParticleData(), this->m_SimulationObjects, true);
+                timer.tock();
+                if(nGen > 0) {
+                    logger().printLog(String("Generated ") + Formatters::toString(nGen) + String(" particles by rigid body object: ") +
+                                      obj->name() + String(" (") + timer.getRunTime() + String(")"));
+                }
             }
             m_RigidBodies.emplace_back(std::move(obj));
         }

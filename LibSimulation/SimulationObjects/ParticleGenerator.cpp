@@ -66,8 +66,7 @@ UInt ParticleGenerator<N, Real_t>::generateParticles(PropertyGroup& propertyGrou
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 typename ParticleGenerator<N, Real_t>::StdVT_VecN
-ParticleGenerator<N, Real_t>::generateParticles(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects,
-                                                bool bIgnoreOverlapped /*= false*/) {
+ParticleGenerator<N, Real_t>::generateParticles(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects, bool bIgnoreOverlapped /*= false*/) {
     StdVT_VecN positions;
     if(this->loadParticlesFromFile(positions)) {
         return positions;
