@@ -27,13 +27,15 @@ namespace ParticleSolvers {
 template<Int N, class Real_t>
 class ParticleSolverBase {
     ////////////////////////////////////////////////////////////////////////////////
-    __NT_TYPE_ALIAS __NT_DECLARE_PARTICLE_SOLVER_ACCESSORS
+    __NT_TYPE_ALIAS
     ////////////////////////////////////////////////////////////////////////////////
 public:
     using SolverRealType = Real_t;
     ParticleSolverBase();
     virtual ~ParticleSolverBase();
     static constexpr Int dimension() noexcept { return N; }
+    static constexpr bool isFloat() noexcept { return std::is_same_v<Real_t, float>; }
+    __NT_DECLARE_PARTICLE_SOLVER_ACCESSORS
     ////////////////////////////////////////////////////////////////////////////////
     virtual JParams loadScene(const String& sceneFile);
     ////////////////////////////////////////////////////////////////////////////////
