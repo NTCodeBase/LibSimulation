@@ -49,7 +49,7 @@ protected:
     virtual void   initializeIntegrationObjects(const JParams& jParams) = 0;
     virtual void   createParticleGenerators(const JParams& jParams)     = 0;
     virtual void   createRigidBodyObjects(const JParams& jParams);
-    virtual bool   updateSimulationObjects();
+    virtual bool   updateSimulationObjects(Real_t timestep);
     virtual void   generateParticles() = 0;
     virtual void   advanceFrame()      = 0;
     ////////////////////////////////////////////////////////////////////////////////

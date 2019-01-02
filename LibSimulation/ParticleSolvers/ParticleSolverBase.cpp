@@ -354,13 +354,13 @@ void ParticleSolverBase<N, Real_t>::createRigidBodyObjects(const JParams& jParam
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-bool ParticleSolverBase<N, Real_t>::updateSimulationObjects() {
+bool ParticleSolverBase<N, Real_t>::updateSimulationObjects(Real_t timestep) {
     bool bSceneChanged = false;
     if(m_SimulationObjects.size() > 0) {
         for(auto& obj : m_SimulationObjects) {
             bSceneChanged |= obj->updateObject(globalParams("FinishedFrame").get<UInt>() + 1u, /* current frame is 1-based */
                                                globalParams("FrameLocalTime").get<Real_t>() / globalParams("FrameDuration").get<Real_t>(),
-                                               globalParams("FrameDuration").get<Real_t>());
+                                               timestep);
         }
     }
     return bSceneChanged;
