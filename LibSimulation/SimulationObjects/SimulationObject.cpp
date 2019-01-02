@@ -99,8 +99,8 @@ void SimulationObject<N, Real_t>::initializeParameters(const JParams& jParams) {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-bool SimulationObject<N, Real_t>::updateObject(UInt frame, Real_t frameFraction, Real_t frameDuration) {
-    __NT_UNUSED(frameDuration);
+bool SimulationObject<N, Real_t>::updateObject(UInt frame, Real_t frameFraction, Real_t timestep) {
+    __NT_UNUSED(timestep);
     return m_GeometryObj->updateTransformation(frame, frameFraction);
 }
 

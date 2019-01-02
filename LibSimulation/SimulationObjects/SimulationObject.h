@@ -47,7 +47,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////
     //    virtual void initializeProperties() = 0;
     virtual void initializeParameters(const JParams& jParams);
-    virtual bool updateObject(UInt frame, Real_t frameFraction, Real_t frameDuration);
+    virtual bool updateObject(UInt frame, Real_t frameFraction, Real_t timestep);
     virtual UInt generateParticles(PropertyGroup& propertyGroup, StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects,
                                    bool bIgnoreOverlapped = false) = 0;
     ////////////////////////////////////////////////////////////////////////////////
