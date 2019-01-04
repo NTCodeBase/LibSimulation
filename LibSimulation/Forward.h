@@ -34,9 +34,10 @@ template<int N, class T> class ParticleGenerator;
 
 ////////////////////////////////////////////////////////////////////////////////
 // particle solvers
-template<class T> class GlobalParameters;
+template<class T> struct GlobalParameters;
+template<int N, class T> struct ParticleDataBase;
+
 template<int N, class T> class ParticleSolverBase;
-template<int N, class T> class ParticleDataBase;
 ////////////////////////////////////////////////////////////////////////////////
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
