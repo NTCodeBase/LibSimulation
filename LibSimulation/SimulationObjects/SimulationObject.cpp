@@ -22,12 +22,11 @@
 #include <LibSimulation/SimulationObjects/SimulationObject.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-namespace SimulationObjects {
+namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-SimulationObject<N, Real_t>::SimulationObject(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_,
-                                              ParameterManager& parameterManager_, PropertyManager& propertyManager_) :
-    m_Description(desc_), m_Logger(logger_), m_ParameterManager(parameterManager_), m_PropertyManager(propertyManager_) {
+SimulationObject<N, Real_t>::SimulationObject(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_) :
+    m_Description(desc_), m_Logger(logger_) {
     ////////////////////////////////////////////////////////////////////////////////
     // internal geometry object
     String geometryType;
@@ -106,24 +105,6 @@ bool SimulationObject<N, Real_t>::updateObject(UInt frame, Real_t frameFraction,
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-bool SimulationObject<N, Real_t>::isInside(const VecN& ppos) const {
-    return m_GeometryObj->isInside(ppos, true);
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-template<Int N, class Real_t>
-Real_t SimulationObject<N, Real_t>::signedDistance(const VecN& ppos) const {
-    return m_GeometryObj->signedDistance(ppos, true);
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-template<Int N, class Real_t>
-VecX<N, Real_t> SimulationObject<N, Real_t>::gradSignedDistance(const VecN& ppos, Real_t dxyz /*= Real_t(1e-4)*/) const {
-    return m_GeometryObj->gradSignedDistance(ppos, true, dxyz);
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-template<Int N, class Real_t>
 bool SimulationObject<N, Real_t>::loadParticlesFromFile(StdVT_VecN& positions) {
     if(m_bUseFileCache && !m_ParticleFile.empty() && FileHelpers::fileExisted(m_ParticleFile)) {
         auto particleRadius = simParams("ParticleRadius").get<Real_t>();
@@ -171,4 +152,4 @@ void SimulationObject<N, Real_t>::saveParticlesToFile(const StdVT_VecN& position
 __NT_INSTANTIATE_CLASS_COMMON_DIMENSIONS_AND_TYPES(SimulationObject)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-} // end namespace SimulationObjects
+} // end namespace NTCodeBase
