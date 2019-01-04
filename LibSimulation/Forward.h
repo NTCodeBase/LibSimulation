@@ -17,19 +17,25 @@
 #include <LibCommon/CommonForward.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-class ParticleSerialization;
-class Parameter;
-class ParameterManager;
-class PropertyManager;
-
+namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-namespace SimulationObjects {
+
+////////////////////////////////////////////////////////////////////////////////
+// particle tools
+class ParticleSerialization;
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// simiulation objects
 template<int N, class T> class SimulationObject;
 template<int N, class T> class RigidBody;
 template<int N, class T> class ParticleGenerator;
-}
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// particle solvers
+template<int N, class T> class ParticleSolverBase;
+////////////////////////////////////////////////////////////////////////////////
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-namespace ParticleSolvers {
-template<int N, class T> class ParticleSolverBase;
-}
+} // end namespace NTCodeBase
