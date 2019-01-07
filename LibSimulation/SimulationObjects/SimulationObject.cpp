@@ -25,8 +25,8 @@
 namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-SimulationObject<N, Real_t>::SimulationObject(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_) :
-    m_Description(desc_), m_Logger(logger_) {
+SimulationObject<N, Real_t>::SimulationObject(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_, Real_t particleRadius) :
+    m_Description(desc_), m_Logger(logger_), m_ParticleRadius(particleRadius) {
     ////////////////////////////////////////////////////////////////////////////////
     // internal geometry object
     String geometryType;
@@ -46,15 +46,26 @@ void SimulationObject<N, Real_t>::initializeParameters(const JParams& jParams) {
     }
     ////////////////////////////////////////////////////////////////////////////////
     // object ID and default name
-    m_ObjID = NumberHelpers::iRand<UInt>::rnd();
-    while(s_GeneratedObjIDs.find(m_ObjID) != s_GeneratedObjIDs.end()) {
+    do {
         m_ObjID = NumberHelpers::iRand<UInt>::rnd();
-    }
+    } while(s_GeneratedObjIDs.find(m_ObjID) != s_GeneratedObjIDs.end());
+    s_GeneratedObjIDs.insert(m_ObjID);
+    ////////////////////////////////////////////////////////////////////////////////
     if(!JSONHelpers::readValue(jParams, m_ObjName, "Name")) {
         m_ObjName = String("Object_") + std::to_string(m_ObjID);
     }
     logger().printLog(m_Description + String(": ") + m_ObjName);
     logger().printLogIndent(String("Geometry: ") + m_GeometryObj->name());
+    ////////////////////////////////////////////////////////////////////////////////
+    // internal particle generation
+    __NT_REQUIRE(JSONHelpers::readBool(jParams, m_bGenerateParticleInside, "GenerateParticleInside"));
+    JSONHelpers::readValue(jParams, m_GenParticleParams.jitterRatio, "JitterRatio");
+    JSONHelpers::readVector(jParams, m_GenParticleParams.samplingRatio, "SamplingRatio");
+    JSONHelpers::readValue(jParams, m_GenParticleParams.thicknessRatio, "ParticleGenerationThicknessRatio");
+    logger().printLogIndent(String("Internal particle generation: ") + (m_bGenerateParticleInside ? String("Yes") : String("No")));
+    logger().printLogIndent(String("Jitter ratio (if applicable): ") + std::to_string(m_GenParticleParams.jitterRatio), 2);
+    logger().printLogIndent(String("Sampling ratio (if applicable): ") + Formatters::toString(m_GenParticleParams.samplingRatio), 2);
+    logger().printLogIndent(String("Thickenss ratio (if applicable): ") + Formatters::toString(m_GenParticleParams.thicknessRatio), 2);
     ////////////////////////////////////////////////////////////////////////////////
     // file cache parameters
     JSONHelpers::readBool(jParams, m_bUseFileCache, "UseFileCache");
@@ -105,18 +116,77 @@ bool SimulationObject<N, Real_t>::updateObject(UInt frame, Real_t frameFraction,
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
+typename SimulationObject<N, Real_t>::StdVT_VecN
+SimulationObject<N, Real_t>::generateParticles(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects, bool bIgnoreOverlapped /*= false*/) {
+    StdVT_VecN positions;
+    if(this->loadParticlesFromFile(positions)) {
+        return positions;
+    }
+    auto thicknessThreshold = m_GenParticleParams.thicknessRatio * m_ParticleRadius;
+    auto spacing = m_ParticleRadius * Real_t(2) * m_GenParticleParams.samplingRatio;
+    auto boxMin  = this->m_GeometryObj->getAABBMin();
+    auto boxMax  = this->m_GeometryObj->getAABBMax();
+    auto pGrid   = NumberHelpers::createGrid<UInt>(boxMin, boxMax, spacing);
+    ////////////////////////////////////////////////////////////////////////////////
+    positions.reserve(glm::compMul(pGrid));
+    ParallelObjects::SpinLock lock;
+    if(bIgnoreOverlapped) {
+        Scheduler::parallel_for(pGrid,
+                                [&](auto... idx) {
+                                    auto node = VecX<N, Real_t>(idx...);
+                                    VecN ppos = boxMin + node * spacing;
+                                    if(auto geoPhi = this->signedDistance(ppos);
+                                       (geoPhi < -m_ParticleRadius) && (geoPhi > -thicknessThreshold)) {
+                                        lock.lock();
+                                        positions.push_back(ppos);
+                                        lock.unlock();
+                                    }
+                                });
+    } else {
+        Scheduler::parallel_for(pGrid,
+                                [&](auto... idx) {
+                                    auto node = VecX<N, Real_t>(idx...);
+                                    VecN ppos = boxMin + node * spacing;
+                                    for(auto& obj : otherObjects) {
+                                        if(obj->objID() != this->objID() && obj->signedDistance(ppos) < 0) {
+                                            return;
+                                        }
+                                    }
+                                    if(auto geoPhi = this->signedDistance(ppos);
+                                       (geoPhi < -m_ParticleRadius) && (geoPhi > -thicknessThreshold)) {
+                                        lock.lock();
+                                        positions.push_back(ppos);
+                                        lock.unlock();
+                                    }
+                                });
+    }
+    positions.shrink_to_fit();
+    ////////////////////////////////////////////////////////////////////////////////
+    // jitter positions
+    if(const auto jitter = m_GenParticleParams.jitterRatio * m_ParticleRadius; jitter > TinyReal()) {
+        for(auto& ppos: positions) {
+            NumberHelpers::jitter(ppos, jitter);
+        }
+    }
+    ////////////////////////////////////////////////////////////////////////////////
+    // save particles to file, if needed
+    this->saveParticlesToFile(positions);
+    return positions;
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+template<Int N, class Real_t>
 bool SimulationObject<N, Real_t>::loadParticlesFromFile(StdVT_VecN& positions) {
     if(m_bUseFileCache && !m_ParticleFile.empty() && FileHelpers::fileExisted(m_ParticleFile)) {
-        auto particleRadius = simParams("ParticleRadius").get<Real_t>();
         switch(m_FileFormat) {
             case FileFormat::OBJ:
                 return ParticleHelpers::loadParticlesFromObj(m_ParticleFile, positions);
             case FileFormat::BGEO:
-                return ParticleHelpers::loadParticlesFromBGEO(m_ParticleFile, positions, particleRadius);
+                return ParticleHelpers::loadParticlesFromBGEO(m_ParticleFile, positions, m_ParticleRadius);
             case FileFormat::BNN:
-                return ParticleHelpers::loadParticlesFromBNN(m_ParticleFile, positions, particleRadius);
+                return ParticleHelpers::loadParticlesFromBNN(m_ParticleFile, positions, m_ParticleRadius);
             case FileFormat::BINARY:
-                return ParticleHelpers::loadParticlesFromBinary(m_ParticleFile, positions, particleRadius);
+                return ParticleHelpers::loadParticlesFromBinary(m_ParticleFile, positions, m_ParticleRadius);
             default:;
                 return false;
         }
@@ -128,19 +198,18 @@ bool SimulationObject<N, Real_t>::loadParticlesFromFile(StdVT_VecN& positions) {
 template<Int N, class Real_t>
 void SimulationObject<N, Real_t>::saveParticlesToFile(const StdVT_VecN& positions) {
     if(m_bUseFileCache && !m_ParticleFile.empty()) {
-        auto particleRadius = simParams("ParticleRadius").get<Real_t>();
         switch(m_FileFormat) {
             case FileFormat::OBJ:
                 ParticleHelpers::saveParticlesToObj(m_ParticleFile, positions);
                 break;
             case FileFormat::BGEO:
-                ParticleHelpers::saveParticlesToBGEO(m_ParticleFile, positions, particleRadius);
+                ParticleHelpers::saveParticlesToBGEO(m_ParticleFile, positions, m_ParticleRadius);
                 break;
             case FileFormat::BNN:
-                ParticleHelpers::saveParticlesToBNN(m_ParticleFile, positions, particleRadius);
+                ParticleHelpers::saveParticlesToBNN(m_ParticleFile, positions, m_ParticleRadius);
                 break;
             case FileFormat::BINARY:
-                ParticleHelpers::saveParticlesToBinary(m_ParticleFile, positions, particleRadius);
+                ParticleHelpers::saveParticlesToBinary(m_ParticleFile, positions, m_ParticleRadius);
                 break;
             default:;
         }

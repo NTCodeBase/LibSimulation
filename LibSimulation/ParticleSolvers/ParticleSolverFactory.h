@@ -16,7 +16,7 @@
 #include <LibSimulation/ParticleSolvers/ParticleSolverBase.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-namespace ParticleSolvers {
+namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 // ParticleSolverFactory
@@ -34,7 +34,7 @@ public:
     static StdVT_String                             getSolverList();
 
 private:
-    static std::map<String, SolverCreationFuncPtr>& getCreationFuncPtrs();
+    static std::unordered_map<String, SolverCreationFuncPtr>& getCreationFuncPtrs();
 };
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -46,12 +46,8 @@ template<class Solver>
 class RegisteredInSolverFactory {
 protected:
     RegisteredInSolverFactory() { __NT_REQUIRE(s_bRegistered); }
-    static bool s_bRegistered;
+    static inline bool s_bRegistered =
+        ParticleSolverFactory<Solver::dimension(), typename Solver::RealType>::registerSolver(Solver::solverName(), Solver::createSolver);
 };
-
-template<class Solver>
-bool RegisteredInSolverFactory<Solver>::s_bRegistered =
-    ParticleSolverFactory<Solver::dimension(), typename Solver::SolverRealType>::registerSolver(Solver::solverName(), Solver::createSolver);
-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-} // end namespace ParticleSolvers
+} // end namespace NTCodeBase

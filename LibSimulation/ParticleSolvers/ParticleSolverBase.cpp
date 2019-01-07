@@ -22,7 +22,7 @@
 #include <LibSimulation/ParticleSolvers/ParticleSolverBase.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-namespace ParticleSolvers {
+namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 ParticleSolverBase<N, Real_t>::ParticleSolverBase() {
@@ -48,12 +48,10 @@ JParams ParticleSolverBase<N, Real_t>::loadScene(const String& sceneFile) {
     // read global parameters
     __NT_REQUIRE(jSceneParams.find("GlobalParameters") != jSceneParams.end());
     {
-        initializeGlobalParameters(jSceneParams["GlobalParameters"]);
-        if(globalParams("SaveFrameData").get<bool>()
-           || globalParams("SaveMemoryState").get<bool>()
-           || globalParams("LogToFile").get<bool>()) {
-            FileHelpers::createFolder(globalParams("DataPath").get<String>());
-            FileHelpers::copyFile(sceneFile, globalParams("DataPath").get<String>() + "/" + FileHelpers::getFileName(sceneFile));
+        m_GlobalParameters.parseParameters(jSceneParams["GlobalParameters"]);
+        if(globalParams().bSaveFrameData || globalParams().bSaveMemoryState || globalParams().bPrintLog2File) {
+            FileHelpers::createFolder(globalParams().dataPath);
+            FileHelpers::copyFile(sceneFile, globalParams().dataPath + "/" + FileHelpers::getFileName(sceneFile));
         }
     }
 
@@ -64,7 +62,7 @@ JParams ParticleSolverBase<N, Real_t>::loadScene(const String& sceneFile) {
         logger().newLine();
         logger().printLog("Load scene file: " + sceneFile);
         logger().newLine();
-        printGlobalParameters();
+        m_GlobalParameters.printParameters(logger());
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -92,159 +90,17 @@ JParams ParticleSolverBase<N, Real_t>::loadScene(const String& sceneFile) {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-void ParticleSolverBase<N, Real_t>::initializeGlobalParameters(const JParams& jParams) {
-    paramManager().addGroup("GlobalParameters", "Global parameters");
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // misc parameters
-    paramManager().addParameter<bool>("GlobalParameters", "AutoStart", "Start simulation immediately", false, jParams);
-    paramManager().addParameter<int>("GlobalParameters", "NThreads", "Number of working threads", -1, jParams);
-    ////////////////////////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////////
-    paramManager().addParameter<Real_t>("GlobalParameters", "SystemTime", "Evolution time of the entire system", Real_t(0));
-    paramManager().addParameter<Real_t>("GlobalParameters", "FrameLocalTime", "Evolution time within the current frame", Real_t(0));
-    paramManager().addParameter<UInt>("GlobalParameters", "FinishedFrame", "Number of finished frames", 0u);
-
-    paramManager().addParameter<Real_t>("GlobalParameters", "FrameDuration", "Frame duration", Real_t(1.0 / 30.0), jParams);
-    paramManager().addParameter<UInt>("GlobalParameters", "StartFrame", "Start frame", 1u, jParams);
-    paramManager().addParameter<UInt>("GlobalParameters", "FinalFrame", "Final frame", 1u, jParams);
-    paramManager().addParameter<UInt>("GlobalParameters", "NPhaseInFrames", "Number of phase-in frames", 0u, jParams);
-    ////////////////////////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // logging parameters
-    paramManager().addParameter<bool>("GlobalParameters", "LogToConsole", "Log to console", true, jParams);
-    paramManager().addParameter<bool>("GlobalParameters", "LogToFile", "Log to file", true, jParams);
-    paramManager().addParameter<int>("GlobalParameters", "ConsoleLogLevel", "Console log level", 0, jParams);
-    paramManager().addParameter<int>("GlobalParameters", "FileLogLevel", "File log level", 0, jParams);
-    ////////////////////////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // data IO parameters
-    paramManager().addParameter<String>("GlobalParameters", "DataPath", "Output path", String("./Output"), jParams);
-    paramManager().addParameter<bool>("GlobalParameters", "LoadMemoryState", "Load saved memory state", false, jParams);
-    paramManager().addParameter<bool>("GlobalParameters", "SaveMemoryState", "Save memory state", false, jParams);
-    paramManager().addParameter<bool>("GlobalParameters", "SaveFrameData", "Save simulation data each frame", false, jParams);
-    paramManager().addParameter<bool>("GlobalParameters", "ClearOldFrameData", "Clear old data", false, jParams);
-    paramManager().addParameter<bool>("GlobalParameters", "ClearAllOldData", "Clear all old data", false, jParams);
-    paramManager().addParameter<UInt>("GlobalParameters", "NFramePerState", "Number of frames that are skipped for each memory state", 1u, jParams);
-    ////////////////////////////////////////////////////////////////////////////////
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-template<Int N, class Real_t>
-void ParticleSolverBase<N, Real_t>::initializeSimulationParameters(const JParams& jParams) {
-    paramManager().addGroup("SimulationParameters", "Global parameters");
-    logger().printLog(String("Simulation parameters:"));
-    ////////////////////////////////////////////////////////////////////////////////
-    // time step size
-    const auto& prMinTimestep = paramManager().addParameter<Real_t>("SimulationParameters", "MinTimestep", "Minimum allowed time step", Real_t(1.0e-6), jParams);
-    const auto& prMaxTimestep = paramManager().addParameter<Real_t>("SimulationParameters", "MaxTimestep", "Maximum allowed time step", Real_t(1.0 / 30.0), jParams);
-    const auto& prCFL         = paramManager().addParameter<Real_t>("SimulationParameters", "CFLFactor", "CFLFactor", Real_t(1.0), jParams);
-    logger().printLogIndent(prMinTimestep.description() + String(": ") + Formatters::toSciString(prMinTimestep.get<Real_t>()));
-    logger().printLogIndent(prMaxTimestep.description() + String(": ") + Formatters::toSciString(prMaxTimestep.get<Real_t>()));
-    logger().printLogIndent(prCFL.description() + String(": ") + std::to_string(prCFL.get<Real_t>()));
-    logger().newLine();
-    ////////////////////////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // simulation domain
-    auto& prBMin = paramManager().addParameter<VecN>("SimulationParameters", "DomainBMin", "DomainBMin", VecN(-1));
-    auto& prBMax = paramManager().addParameter<VecN>("SimulationParameters", "DomainBMax", "DomainBMin", VecN(1));
-    __NT_REQUIRE(jParams.find("DomainBox") != jParams.end());
-    {
-        JParams jBoxParams = jParams["DomainBox"];
-        jBoxParams["GeometryType"] = String("Box");
-
-        auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>(jBoxParams, m_Logger, m_ParameterManager, m_PropertyManager);
-        obj->name() = String("DomainBox");
-        m_RigidBodies.push_back(obj);
-
-        auto box = std::dynamic_pointer_cast<GeometryObjects::BoxObject<N, Real_t>>(obj->geometry());
-
-        prBMin.set<VecN>(box->getTransformedBoxMin());
-        prBMax.set<VecN>(box->getTransformedBoxMax());
-    }
-    logger().printLogIndent(String("Domain box: ") + Formatters::toString(prBMin.get<VecN>()) + " -> " + Formatters::toString(prBMax.get<VecN>()));
-    ////////////////////////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // particle parameters
-    const auto& prParticleRadius = paramManager().addParameter<Real_t>("SimulationParameters", "ParticleRadius", "Particle radius", Real_t(0), jParams, true);
-    paramManager().addParameter<Real_t>("SimulationParameters", "ParticleRadiusSqr", "Particle radius squared", MathHelpers::sqr(prParticleRadius.get<Real_t>()));
-    logger().printLogIndent(prParticleRadius.description() + String(": ") + std::to_string(prParticleRadius.get<Real_t>()));
-    logger().newLine();
-    ////////////////////////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // gravity
-    const auto& prGravity = paramManager().addParameter<VecN>("SimulationParameters", "Gravity", "Gravity", VecN(0), jParams);
-    logger().printLogIndent(prGravity.description() + String(": ") + Formatters::toString(prGravity.get<VecN>()));
-    logger().newLine();
-    ////////////////////////////////////////////////////////////////////////////////
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-template<Int N, class Real_t>
-void ParticleSolverBase<N, Real_t>::printGlobalParameters() {
-    ////////////////////////////////////////////////////////////////////////////////
-    logger().printLog(String("Global parameters:"));
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // misc parameters
-    const auto& prNThreads = globalParams("NThreads");
-    logger().printLogIndent(prNThreads.description() + String(": ") + (prNThreads.get<Int>() > 0 ? std::to_string(prNThreads.get<Int>()) : String("Automatic")));
-    ////////////////////////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////////
-    const auto& prFrameDuration = globalParams("FrameDuration");
-    const auto& prStartFrame    = globalParams("StartFrame");
-    const auto& prFinalFrame    = globalParams("FinalFrame");
-    const auto& prNPhaseInFrame = globalParams("NPhaseInFrames");
-
-    logger().printLogIndent(prFrameDuration.description() + String(": ") + Formatters::toSciString(prFrameDuration.get<Real_t>()) +
-                            String(" (~") + std::to_string(static_cast<int>(std::round(1.0_f / prFrameDuration.get<Real_t>()))) + String(" fps)"));
-    logger().printLogIndent(prStartFrame.description() + String(": ") + std::to_string(prStartFrame.get<UInt>()));
-    logger().printLogIndent(prFinalFrame.description() + String(": ") + std::to_string(prFinalFrame.get<UInt>()));
-    logger().printLogIndent(prNPhaseInFrame.description() + String(": ") + std::to_string(prNPhaseInFrame.get<UInt>()));
-    ////////////////////////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // data IO parameters
-    const auto& prLogToFile         = globalParams("LogToFile");
-    const auto& prDataPath          = globalParams("DataPath");
-    const auto& prLoadMemoryState   = globalParams("LoadMemoryState");
-    const auto& prSaveMemoryState   = globalParams("SaveMemoryState");
-    const auto& prSaveFrameData     = globalParams("SaveFrameData");
-    const auto& prClearOldFrameData = globalParams("ClearOldFrameData");
-    const auto& prClearAllOldData   = globalParams("ClearAllOldData");
-    const auto& prFramePerState     = globalParams("NFramePerState");
-
-    logger().printLogIndentIf(prSaveMemoryState.get<bool>() || prSaveFrameData.get<bool>() || prLogToFile.get<bool>(), ("Data path: ") + prDataPath.get<String>());
-    logger().printLogIndent(prLoadMemoryState.description() + String(": ") + (prLoadMemoryState.get<bool>() ? String("Yes") : String("No")));
-    logger().printLogIndent(prSaveMemoryState.description() + String(": ") + (prSaveMemoryState.get<bool>() ? String("Yes") : String("No")));
-    logger().printLogIndentIf(prSaveMemoryState.get<bool>(), prFramePerState.description() + String(": ") + std::to_string(prFramePerState.get<UInt>()), 2);
-    logger().printLogIndent(prSaveFrameData.description() + String(": ") + (prSaveFrameData.get<bool>() ? String("Yes") : String("No")));
-    logger().printLogIndent(prClearOldFrameData.description() + String(": ") + (prClearOldFrameData.get<bool>() ? String("Yes") : String("No")));
-    logger().printLogIndent(prClearAllOldData.description() + String(": ") + (prClearAllOldData.get<bool>() ? String("Yes") : String("No")));
-    logger().newLine();
-    ////////////////////////////////////////////////////////////////////////////////
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-template<Int N, class Real_t>
 void ParticleSolverBase<N, Real_t>::setupLogger() {
-    m_Logger = Logger::createLogger(getSolverName(), globalParams("DataPath").get<String>(),
-                                    globalParams("LogToConsole").get<bool>(),
-                                    globalParams("LogToFile").get<bool>(),
-                                    static_cast<spdlog::level::level_enum>(globalParams("ConsoleLogLevel").get<Int>()),
-                                    static_cast<spdlog::level::level_enum>(globalParams("FileLogLevel").get<Int>()));
+    m_Logger = Logger::createLogger(getSolverName(), globalParams().dataPath,
+                                    globalParams().bPrintLog2Console,
+                                    globalParams().bPrintLog2File,
+                                    static_cast<spdlog::level::level_enum>(globalParams().consoleLogLevel),
+                                    static_cast<spdlog::level::level_enum>(globalParams().fileLogLevel));
     logger().printTextBox({ getSolverDescription(), String("Build: ") + String(__DATE__) + String(" - ") + String(__TIME__) });
     ////////////////////////////////////////////////////////////////////////////////
     // create a fallback logger if no console logger
-    if(!globalParams("LogToConsole").get<bool>()) {
-        m_FallbackConsoleLogger = Logger::createLogger(getSolverName(), globalParams("DataPath").get<String>(), true, false,
+    if(!globalParams().bPrintLog2Console) {
+        m_FallbackConsoleLogger = Logger::createLogger(getSolverName(), globalParams().dataPath, true, false,
                                                        spdlog::level::level_enum::trace, spdlog::level::level_enum::trace);
     }
 }
@@ -252,15 +108,14 @@ void ParticleSolverBase<N, Real_t>::setupLogger() {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 void ParticleSolverBase<N, Real_t>::doSimulation() {
-    tbb::task_scheduler_init volatile init(globalParams("NThreads").get<Int>());
+    tbb::task_scheduler_init volatile init(globalParams().nThreads);
     (void)init;
     ////////////////////////////////////////////////////////////////////////////////
     logger().printCenterAligned("Start Simulation", '=');
     ////////////////////////////////////////////////////////////////////////////////
-    auto startFrame = (globalParams("StartFrame").get<UInt>() <= 1) ?
-                      globalParams("FinishedFrame").get<UInt>() + 1u :
-                      MathHelpers::min(globalParams("StartFrame").get<UInt>(), globalParams("FinishedFrame").get<UInt>() + 1u);
-    for(auto frame = startFrame; frame <= globalParams("FinalFrame").get<UInt>(); ++frame) {
+    auto startFrame = (globalParams().startFrame <= 1) ? globalParams().finishedFrame + 1u :
+                      MathHelpers::min(globalParams().startFrame, globalParams().finishedFrame + 1u);
+    for(auto frame = startFrame; frame <= globalParams().finalFrame; ++frame) {
         advanceFrame(frame);
     }
     finalizeSimulation();
@@ -278,8 +133,8 @@ void ParticleSolverBase<N, Real_t>::advanceFrame(UInt frame) {
     advanceFrame();
     logger().newLine();
     logger().printLog(String("Frame #") + std::to_string(frame) + String(" finished | Frame duration: ") +
-                      Formatters::toSciString(globalParams("FrameDuration").get<Real_t>()) +
-                      String("(s) (~") + std::to_string(static_cast<int>(round(Real_t(1.0) / globalParams("FrameDuration").get<Real_t>()))) +
+                      Formatters::toSciString(globalParams().frameDuration) +
+                      String("(s) (~") + std::to_string(static_cast<int>(round(Real_t(1.0) / globalParams().frameDuration))) +
                       String(" fps) | Total computation time: ") + timer.getRunTime());
     logger().printMemoryUsage();
     logger().newLine();
@@ -292,13 +147,13 @@ void ParticleSolverBase<N, Real_t>::finalizeSimulation() {
                                   logger->newLine();
                                   logger->printCenterAligned(String("Simulation finished"), '+');
                                   logger->printLog(String("Total frames: ") +
-                                                   Formatters::toString(globalParams("FinishedFrame").get<UInt>() - globalParams("StartFrame").get<UInt>() + 1u) +
-                                                   String(" (Save frame data: ") + (globalParams("SaveFrameData").get<bool>() ? String("Yes") : String("No")) +
-                                                   String(" | Save state: ") + (globalParams("SaveMemoryState").get<bool>() ? String("Yes") : String("No")) +
-                                                   (globalParams("SaveMemoryState").get<bool>() ?
-                                                    String(" (") + std::to_string(globalParams("NFramePerState").get<UInt>()) +
+                                                   Formatters::toString(globalParams().finishedFrame - globalParams().startFrame + 1u) +
+                                                   String(" (Save frame data: ") + (globalParams().bSaveFrameData ? String("Yes") : String("No")) +
+                                                   String(" | Save state: ") + (globalParams().bSaveMemoryState ? String("Yes") : String("No")) +
+                                                   (globalParams().bSaveMemoryState ?
+                                                    String(" (") + std::to_string(globalParams().nFramesPerState) +
                                                     String(" frames/state)") : String("")) + String(")"));
-                                  logger->printLog(String("Data path: ") + globalParams("DataPath").get<String>());
+                                  logger->printLog(String("Data path: ") + globalParams().dataPath);
                                   for(auto& str : strFolderSizeInfo) {
                                       logger->printLog(str);
                                   }
@@ -306,50 +161,12 @@ void ParticleSolverBase<N, Real_t>::finalizeSimulation() {
                                   logger->printTotalRunTime();
                               };
     ////////////////////////////////////////////////////////////////////////////////
-    const auto strFolderSizeInfo = FileHelpers::getFolderSizeInfo(globalParams("DataPath").get<String>());
+    const auto strFolderSizeInfo = FileHelpers::getFolderSizeInfo(globalParams().dataPath);
     printFinalizingLog(m_Logger, strFolderSizeInfo);
-    if(!globalParams("LogToConsole").get<bool>()) {
+    if(!globalParams().bPrintLog2Console) {
         printFinalizingLog(m_FallbackConsoleLogger, strFolderSizeInfo);
     }
     Logger::flushAll(-1);
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-template<Int N, class Real_t>
-void ParticleSolverBase<N, Real_t>::createRigidBodyObjects(const JParams& jParams) {
-    __NT_REQUIRE(m_RigidBodies.size() == 1);
-    Timer timer;
-    if constexpr(N == 2) { // for 2D only: generate the ghost particles for the entire domain box
-        if(propertyManager().hasGroup("BoundaryParticle")) {
-            timer.tick();
-            auto nGen = m_RigidBodies.front()->generateParticles(boundaryParticleData(), this->m_SimulationObjects, true);
-            timer.tock();
-            if(nGen > 0) {
-                logger().printLog(String("Generated ") + Formatters::toString(nGen) + String(" particles by rigid body object: ") +
-                                  m_RigidBodies.front()->name() + String(" (") + timer.getRunTime() + String(")"));
-            }
-        }
-    }
-    ////////////////////////////////////////////////////////////////////////////////
-    if(jParams.find("RigidBodies") != jParams.end()) {
-        for(auto& jObj : jParams["RigidBodies"]) {
-            auto obj = std::make_shared<SimulationObjects::RigidBody<N, Real_t>>(jObj, m_Logger, m_ParameterManager, m_PropertyManager);
-            if(propertyManager().hasGroup("BoundaryParticle")) {
-                timer.tick();
-                auto nGen = m_RigidBodies.front()->generateParticles(boundaryParticleData(), this->m_SimulationObjects, true);
-                timer.tock();
-                if(nGen > 0) {
-                    logger().printLog(String("Generated ") + Formatters::toString(nGen) + String(" particles by rigid body object: ") +
-                                      obj->name() + String(" (") + timer.getRunTime() + String(")"));
-                }
-            }
-            m_RigidBodies.emplace_back(std::move(obj));
-        }
-    }
-    ////////////////////////////////////////////////////////////////////////////////
-    for(const auto& obj : m_RigidBodies) {
-        m_SimulationObjects.push_back(obj);
-    }
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -358,8 +175,8 @@ bool ParticleSolverBase<N, Real_t>::updateSimulationObjects(Real_t timestep) {
     bool bSceneChanged = false;
     if(m_SimulationObjects.size() > 0) {
         for(auto& obj : m_SimulationObjects) {
-            bSceneChanged |= obj->updateObject(globalParams("FinishedFrame").get<UInt>() + 1u, /* current frame is 1-based */
-                                               globalParams("FrameLocalTime").get<Real_t>() / globalParams("FrameDuration").get<Real_t>(),
+            bSceneChanged |= obj->updateObject(globalParams().finishedFrame + 1u, /* current frame is 1-based */
+                                               globalParams().frameLocalTime / globalParams().frameDuration,
                                                timestep);
         }
     }
@@ -371,4 +188,4 @@ bool ParticleSolverBase<N, Real_t>::updateSimulationObjects(Real_t timestep) {
 __NT_INSTANTIATE_CLASS_COMMON_DIMENSIONS_AND_TYPES(ParticleSolverBase)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-} // end namespace ParticleSolvers
+} // end namespace NTCodeBase

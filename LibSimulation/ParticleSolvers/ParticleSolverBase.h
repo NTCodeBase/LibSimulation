@@ -15,14 +15,11 @@
 #pragma once
 
 #include <LibCommon/CommonSetup.h>
-
 #include <LibSimulation/Forward.h>
-#include <LibSimulation/Macros.h>
-#include <LibSimulation/Data/Parameter.h>
-#include <LibSimulation/Data/Property.h>
+#include <LibSimulation/ParticleSolvers/GlobalParameters.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-namespace ParticleSolvers {
+namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 class ParticleSolverBase {
@@ -30,12 +27,17 @@ class ParticleSolverBase {
     __NT_TYPE_ALIAS
     ////////////////////////////////////////////////////////////////////////////////
 public:
-    using SolverRealType = Real_t;
+    using RealType = Real_t; // for using in solver factory
+    static constexpr Int dimension() { return N; }
+    static constexpr bool isFloat() { return std::is_same_v<Real_t, float>; }
+    ////////////////////////////////////////////////////////////////////////////////
+    GlobalParameters<Real_t>& globalParams() { return this->m_GlobalParameters; }
+    Logger& logger() { assert(this->m_Logger != nullptr); return *this->m_Logger; }
+    const GlobalParameters<Real_t>& globalParams() const { return this->m_GlobalParameters; }
+    const Logger& logger() const { assert(this->m_Logger != nullptr); return *this->m_Logger; }
+    ////////////////////////////////////////////////////////////////////////////////
     ParticleSolverBase();
     virtual ~ParticleSolverBase();
-    static constexpr Int dimension() noexcept { return N; }
-    static constexpr bool isFloat() noexcept { return std::is_same_v<Real_t, float>; }
-    __NT_DECLARE_PARTICLE_SOLVER_ACCESSORS
     ////////////////////////////////////////////////////////////////////////////////
     virtual JParams loadScene(const String& sceneFile);
     ////////////////////////////////////////////////////////////////////////////////
@@ -44,31 +46,27 @@ public:
     void finalizeSimulation();
 
 protected:
-    virtual String getSolverName()                  = 0;
-    virtual String getSolverDescription()           = 0;
-    virtual void   initializeSimulationProperties() = 0;
-    virtual void   initializeSimulationParameters(const JParams& jParams);
-    virtual void   initializeIntegrationObjects(const JParams& jParams) = 0;
-    virtual void   createParticleGenerators(const JParams& jParams)     = 0;
-    virtual void   createRigidBodyObjects(const JParams& jParams);
+    virtual String getSolverName()        = 0;
+    virtual String getSolverDescription() = 0;
+    virtual void   initializeSimulationParameters(const JParams& jParams) = 0;
+    virtual void   initializeIntegrationObjects(const JParams& jParams)   = 0;
+    virtual void   createParticleGenerators(const JParams& jParams)       = 0;
+    virtual void   createRigidBodies(const JParams& jParams) = 0;
     virtual bool   updateSimulationObjects(Real_t timestep);
     virtual void   generateParticles() = 0;
     virtual void   advanceFrame()      = 0;
     ////////////////////////////////////////////////////////////////////////////////
     void setupLogger();
-    void initializeGlobalParameters(const JParams& jParams);
-    void printGlobalParameters();
-    ////////////////////////////////////////////////////////////////////////////////
-    ParameterManager m_ParameterManager;
-    PropertyManager  m_PropertyManager;
     ////////////////////////////////////////////////////////////////////////////////
     SharedPtr<Logger> m_Logger = nullptr;
     SharedPtr<Logger> m_FallbackConsoleLogger = nullptr;
     ////////////////////////////////////////////////////////////////////////////////
-    StdVT<SharedPtr<SimulationObjects::RigidBody<N, Real_t>>>         m_RigidBodies;
-    StdVT<SharedPtr<SimulationObjects::ParticleGenerator<N, Real_t>>> m_ParticleGenerators;
-    StdVT<SharedPtr<SimulationObjects::SimulationObject<N, Real_t>>>  m_SimulationObjects;
+    GlobalParameters<Real_t> m_GlobalParameters;
+    ////////////////////////////////////////////////////////////////////////////////
+    StdVT<SharedPtr<RigidBody<N, Real_t>>>         m_RigidBodies;
+    StdVT<SharedPtr<ParticleGenerator<N, Real_t>>> m_ParticleGenerators;
+    StdVT<SharedPtr<SimulationObject<N, Real_t>>>  m_SimulationObjects;
 };
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-} // end namespace ParticleSolvers
+} // end namespace NTCodeBase

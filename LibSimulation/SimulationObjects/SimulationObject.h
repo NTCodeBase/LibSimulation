@@ -16,11 +16,9 @@
 
 #include <LibCommon/CommonSetup.h>
 #include <LibCommon/Geometry/GeometryObjects.h>
-
 #include <LibSimulation/Enums.h>
-#include <LibSimulation/Macros.h>
-#include <LibSimulation/Data/Parameter.h>
-#include <LibSimulation/Data/Property.h>
+
+#include <unordered_set>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 namespace NTCodeBase {
@@ -28,12 +26,14 @@ namespace NTCodeBase {
 template<Int N, class Real_t>
 class SimulationObject {
     ////////////////////////////////////////////////////////////////////////////////
-    __NT_TYPE_ALIAS __NT_DECLARE_PARTICLE_SOLVER_ACCESSORS
+    __NT_TYPE_ALIAS
     using GeometryPtr = SharedPtr<GeometryObject<N, Real_t>>;
+    Logger& logger() { assert(this->m_Logger != nullptr); return *this->m_Logger; }
+    const Logger& logger() const { assert(this->m_Logger != nullptr); return *this->m_Logger; }
     ////////////////////////////////////////////////////////////////////////////////
 public:
     SimulationObject() = delete;
-    SimulationObject(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_);
+    SimulationObject(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_, Real_t particleRadius);
     ////////////////////////////////////////////////////////////////////////////////
     // to remove
     auto objID() const { return m_ObjID; }
@@ -51,9 +51,10 @@ public:
     VecN   gradSignedDistance(const VecN& ppos, Real_t dxyz = Real_t(1e-4)) const { return m_GeometryObj->gradSignedDistance(ppos, m_bNegativeInside, dxyz); }
 
 protected:
-    void initializeParameters(const JParams& jParams);
-    bool loadParticlesFromFile(StdVT_VecN& positions);
-    void saveParticlesToFile(const StdVT_VecN& positions);
+    virtual void initializeParameters(const JParams& jParams);
+    StdVT_VecN   generateParticles(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects, bool bIgnoreOverlapped = false);
+    bool         loadParticlesFromFile(StdVT_VecN& positions);
+    void         saveParticlesToFile(const StdVT_VecN& positions);
     ////////////////////////////////////////////////////////////////////////////////
     SharedPtr<Logger> m_Logger;
     ////////////////////////////////////////////////////////////////////////////////
@@ -66,6 +67,15 @@ protected:
     // internal geometry object
     GeometryPtr m_GeometryObj     = nullptr;
     bool        m_bNegativeInside = true;
+    Real_t      m_ParticleRadius  = 0;
+    ////////////////////////////////////////////////////////////////////////////////
+    // internal particle generation
+    bool m_bGenerateParticleInside = false;
+    struct {
+        Real_t thicknessRatio = HugeReal();
+        Real_t jitterRatio    = Real_t(0);
+        VecN   samplingRatio  = VecN(1.0);
+    } m_GenParticleParams;
     ////////////////////////////////////////////////////////////////////////////////
     // particle file cache parameters
     String     m_ParticleFile  = String("");

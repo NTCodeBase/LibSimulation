@@ -17,42 +17,28 @@
 #include <unordered_map>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-namespace SimulationObjects {
+namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 class RigidBody : public SimulationObject<N, Real_t> {
     ////////////////////////////////////////////////////////////////////////////////
-    __NT_TYPE_ALIAS __NT_DECLARE_PARTICLE_SOLVER_ACCESSORS
+    __NT_TYPE_ALIAS
+    Logger& logger() { assert(this->m_Logger != nullptr); return *this->m_Logger; }
+    const Logger& logger() const { assert(this->m_Logger != nullptr); return *this->m_Logger; }
     ////////////////////////////////////////////////////////////////////////////////
 public:
     RigidBody() = delete;
-    RigidBody(const JParams& jParams_, const SharedPtr<Logger>& logger_,
-              ParameterManager& parameterManager_, PropertyManager& propertyManager_) :
-        SimulationObject<N, Real_t>("Rigid body", jParams_, logger_, parameterManager_, propertyManager_) { initializeParameters(jParams_); }
+    RigidBody(const JParams& jParams_, const SharedPtr<Logger>& logger_, Real_t particleRadius) :
+        SimulationObject<N, Real_t>("Rigid body", jParams_, logger_, particleRadius) { initializeParameters(jParams_); }
     ////////////////////////////////////////////////////////////////////////////////
     virtual void initializeParameters(const JParams& jParams) override;
-    virtual bool updateObject(UInt frame, Real_t frameFraction, Real_t timestep) override;
-    virtual UInt generateParticles(PropertyGroup& propertyGroup, StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects,
-                                   bool bIgnoreOverlapped = false) override;
     ////////////////////////////////////////////////////////////////////////////////
-    virtual bool            isInside(const VecN& ppos) const override;
-    virtual Real_t          signedDistance(const VecN& ppos) const override;
-    virtual VecX<N, Real_t> gradSignedDistance(const VecN& ppos, Real_t dxyz = Real_t(1e-4)) const override;
     bool isCollisionObject() const { return m_bIsCollisionObject; }
-    ////////////////////////////////////////////////////////////////////////////////
-    std::pair<bool, StdVT_UInt>                           findConstrainedParticles(PropertyGroup& propertyGroup);
-    template<class... Groups> std::pair<bool, StdVT_UInt> findConstrainedParticles(PropertyGroup& propertyGroup, Groups& ... groups);
-    ////////////////////////////////////////////////////////////////////////////////
     bool resolveCollision(VecN& ppos, VecN& pvel, Real_t timestep);                   // return true if pvel has been modified
     bool resolveCollisionVelocityOnly(const VecN& ppos, VecN& pvel, Real_t timestep); // return true if pvel has been modified
+    void updateObjParticles(StdVT_VecN& positions);
 
 protected:
-    StdVT_VecN generateParticles(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects, bool bIgnoreOverlapped = false);
-    ////////////////////////////////////////////////////////////////////////////////
-
-    void updateObjParticles();
-    void resetConstrainedParticles();
-    void updateConstrainParticles(Real_t timestep);
     ////////////////////////////////////////////////////////////////////////////////
     VecN getObjectVelocity(const VecN& ppos, Real_t timestep);
     ////////////////////////////////////////////////////////////////////////////////
@@ -87,4 +73,4 @@ protected:
 };
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-} // end namespace SimulationObjects
+} // end namespace NTCodeBase

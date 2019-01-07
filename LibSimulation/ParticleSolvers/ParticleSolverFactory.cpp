@@ -18,7 +18,7 @@
 #include <LibSimulation/ParticleSolvers/ParticleSolverFactory.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-namespace ParticleSolvers {
+namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 bool ParticleSolverFactory<N, Real_t>::registerSolver(const String& solverName, SolverCreationFuncPtr funcCreate) {
@@ -26,9 +26,9 @@ bool ParticleSolverFactory<N, Real_t>::registerSolver(const String& solverName, 
     printf("Register particle solver: %s\n", solverName.c_str());
     fflush(stdout);
 #endif
-    auto[it, success] = getCreationFuncPtrs().insert(std::pair<String, SolverCreationFuncPtr>(solverName, funcCreate));
+    auto[it, bSuccess] = getCreationFuncPtrs().emplace(solverName, funcCreate);
     __NT_UNUSED(it);
-    return success;
+    return bSuccess;
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -53,12 +53,12 @@ SharedPtr<ParticleSolverBase<N, Real_t>> ParticleSolverFactory<N, Real_t>::creat
     }
 
     auto jParams = JParams::parse(inputFile);
+    inputFile.close();
     if(jParams.find("GlobalParameters") == jParams.end()) {
         return nullptr;
     } else {
-        auto   jGlobalParams = jParams["GlobalParameters"];
-        String solverName;
-        JSONHelpers::readValue(jGlobalParams, solverName, "Solver");
+        auto [solverName, bSuccess] = JSONHelpers::readValue<String>(jParams["GlobalParameters"], String("Solver"));
+        __NT_REQUIRE(bSuccess);
         return createSolver(solverName);
     }
 }
@@ -75,8 +75,9 @@ StdVT_String ParticleSolverFactory<N, Real_t>::getSolverList() {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-std::map<String, typename ParticleSolverFactory<N, Real_t>::SolverCreationFuncPtr>& ParticleSolverFactory<N, Real_t>::getCreationFuncPtrs() {
-    static std::map<String, SolverCreationFuncPtr> creationFuncPtrs;
+std::unordered_map<String, typename ParticleSolverFactory<N, Real_t>::SolverCreationFuncPtr>&
+ParticleSolverFactory<N, Real_t>::getCreationFuncPtrs() {
+    static std::unordered_map<String, SolverCreationFuncPtr> creationFuncPtrs;
     return creationFuncPtrs;
 }
 
@@ -85,4 +86,4 @@ std::map<String, typename ParticleSolverFactory<N, Real_t>::SolverCreationFuncPt
 __NT_INSTANTIATE_CLASS_COMMON_DIMENSIONS_AND_TYPES(ParticleSolverFactory)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-} // end namespace ParticleSolvers
+} // end namespace NTCodeBase

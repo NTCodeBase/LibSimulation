@@ -23,6 +23,8 @@
 #include <variant>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+namespace NTCodeBase {
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class Parameter {
 public:
     Parameter(const String& groupName, const String& paramName, const String& paramDesc) :
@@ -108,8 +110,8 @@ public:
     const Parameter& parameter(const char* paramName) const { assert(hasParameter(paramName)); return m_ParameterGroups.at(StringHash::hash(paramName)); }
 
 private:
-    String                              m_Name;
-    String                              m_Description;
+    String m_Name;
+    String m_Description;
     std::unordered_map<UInt, Parameter> m_ParameterGroups;
 };
 
@@ -185,3 +187,5 @@ public:
 private:
     std::unordered_map<UInt, ParameterGroup> m_ParameterGroups;
 };
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+} // end namespace NTCodeBase

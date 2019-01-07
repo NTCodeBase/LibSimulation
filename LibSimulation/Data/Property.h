@@ -19,6 +19,8 @@
 #include <variant>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+namespace NTCodeBase {
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class PropertyBase {
 public:
     PropertyBase(const String& groupName, const String& name, const String& desc) : m_Group(groupName), m_Name(name), m_Description(desc), m_Flag(0) {}
@@ -73,7 +75,7 @@ protected:
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class PropertyGroup {
 public:
-    PropertyGroup() { throw std::exception("This place should not be reached!"); }
+    PropertyGroup() { throw std::runtime_error("This place should not be reached!"); }
     PropertyGroup(const String& name, UInt hash) : m_Name(name), m_Hash(hash), m_DataSize(0) {}
     virtual ~PropertyGroup() {
         for(auto& [prop, propPtr]: m_Properties) {
@@ -193,10 +195,10 @@ public:
 private:
     using DiscreteProperty = std::variant<bool, int, UInt, float, double, Vec2i, Vec2ui, Vec2f, Vec3i, Vec3ui, Vec3f, Vec4i, Vec4ui, Vec4d, String>;
 
-    UInt                                                                   m_Hash;
-    String                                                                 m_Name;
-    size_t                                                                 m_DataSize;
-    std::unordered_map<UInt, PropertyBase*>                                m_Properties;
+    UInt   m_Hash;
+    String m_Name;
+    size_t m_DataSize;
+    std::unordered_map<UInt, PropertyBase*> m_Properties;
     std::unordered_map<UInt, std::tuple<String, String, DiscreteProperty>> m_DiscreteProperties;
 };
 
@@ -292,3 +294,5 @@ public:
 private:
     std::unordered_map<UInt, PropertyGroup> m_PropertyGroups;
 };
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+} // end namespace NTCodeBase

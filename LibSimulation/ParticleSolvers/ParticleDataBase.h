@@ -12,34 +12,26 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-#include <LibCommon/Geometry/GeometryObjects.h>
-#include <LibCommon/ParallelHelpers/Scheduler.h>
-#include <LibCommon/Utils/JSONHelpers.h>
-#include <LibCommon/Utils/NumberHelpers.h>
-#include <LibCommon/Logger/Logger.h>
-
-#include <LibSimulation/SimulationObjects/ParticleGenerator.h>
+#pragma once
+#include <LibCommon/CommonSetup.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-void ParticleGenerator<N, Real_t>::initializeParameters(const JParams& jParams) {
-    __NT_REQUIRE(JSONHelpers::readValue(jParams, m_MaterialDensity, "MaterialDensity"));
-    m_ParticleMass = m_MaterialDensity * MathHelpers::pow(Real_t(2.0) * this->m_ParticleRadius, N);
-    logger().printLogIndent(String("Material density: ") + std::to_string(m_MaterialDensity));
-    logger().printLogIndent(String("Particle mass: ") + std::to_string(m_ParticleMass));
+struct ParticleDataBase {
     ////////////////////////////////////////////////////////////////////////////////
-    JSONHelpers::readVector(jParams, m_v0, "InitialVelocity");
-    logger().printLogIndent(String("Initial velocity: ") + Formatters::toString(m_v0));
-    logger().newLine();
+    __NT_TYPE_ALIAS
     ////////////////////////////////////////////////////////////////////////////////
-    JSONHelpers::readBool(jParams, m_bCrashIfNoParticle, "CrashIfNoParticle");
-}
+    UInt size() const { return static_cast<UInt>(positions.size()); }
+    void resize_to_fit();
+    ////////////////////////////////////////////////////////////////////////////////
+    StdVT_VecN   positions, velocities;
+    StdVT_Realt  masses;
+    StdVT_Int8   activity;     // to mark constrained particles
+    StdVT_UInt16 objectIndex;  // store the index of individual objects/strands based on the order they are added
+    UInt         nObjects = 0; // number of individual objects that are added each time by particle generator
+};
 
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-__NT_INSTANTIATE_CLASS_COMMON_DIMENSIONS_AND_TYPES(ParticleGenerator)
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 } // end namespace NTCodeBase
