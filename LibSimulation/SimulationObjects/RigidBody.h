@@ -37,6 +37,7 @@ public:
     bool resolveCollision(VecN& ppos, VecN& pvel, Real_t timestep);                   // return true if pvel has been modified
     bool resolveCollisionVelocityOnly(const VecN& ppos, VecN& pvel, Real_t timestep); // return true if pvel has been modified
     void updateObjParticles(StdVT_VecN& positions);
+    UInt generateParticles(ParticleDataBase<N, Real_t>& particleData, StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects);
 
 protected:
     ////////////////////////////////////////////////////////////////////////////////
@@ -53,10 +54,6 @@ protected:
     bool              m_bIsCollisionObject = true;
     BoundaryCondition m_BoundaryCondition  = BoundaryCondition::Slip;
     Real_t            m_BoundaryFriction   = Real_t(0);
-
-    bool   m_bGenerateParticleInside          = true;
-    Real_t m_ParticleGenerationThicknessRatio = HugeReal();
-    Real_t m_ParticleGenerationDensityRatio   = Real_t(1.5);
     ////////////////////////////////////////////////////////////////////////////////
     // record generated particles
     StdVT<VecN>  m_GeneratedParticles;

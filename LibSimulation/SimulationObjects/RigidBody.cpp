@@ -21,6 +21,7 @@
 #include <LibParticle/ParticleSerialization.h>
 
 #include <LibSimulation/Enums.h>
+#include <LibSimulation/ParticleSolvers/ParticleDataBase.h>
 #include <LibSimulation/SimulationObjects/RigidBody.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -50,9 +51,6 @@ void RigidBody<N, Real_t>::initializeParameters(const JParams& jParams) {
         logger().newLine();
     }
     ////////////////////////////////////////////////////////////////////////////////
-    JSONHelpers::readValue(jParams, m_ParticleGenerationDensityRatio, "ParticleGenerationDensityRatio");
-    JSONHelpers::readVector(jParams, m_ShiftCenterGeneratedParticles, "ShiftCenterGeneratedParticles");
-    ////////////////////////////////////////////////////////////////////////////////
     JSONHelpers::readBool(jParams, m_bConstrainInsideParticles,     "ConstrainInsideParticles");
     JSONHelpers::readBool(jParams, m_bCrashIfNoConstrainedParticle, "CrashIfNoConstrainedParticle");
 }
@@ -68,6 +66,31 @@ void RigidBody<N, Real_t>::updateObjParticles(StdVT_VecN& positions) {
                                 positions[p + range[0]] =
                                     this->geometry()->transformAnimation(positions_t0[p] - m_CenterParticles) + m_CenterParticles;
                             });
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+template<Int N, class Real_t>
+UInt RigidBody<N, Real_t>::generateParticles(ParticleDataBase<N, Real_t>& particleData, StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects) {
+    if(!this->m_GenParticleParams.bGenerateParticle) {
+        this->m_CenterParticles = (this->geometry()->getAABBMin() + this->geometry()->getAABBMax()) * Real_t(0.5);
+        return 0;
+    }
+    ////////////////////////////////////////////////////////////////////////////////
+    __NT_REQUIRE(this->m_GeneratedParticles.size() == 0);
+    auto newPositions = this->generateParticleInside(otherObjects, false);
+    if(newPositions.size() > 0) {
+        size_t oldSize = particleData.positions.size();
+        size_t nGen    = newPositions.size();
+        size_t newSize = oldSize + nGen;
+        this->m_RangeGeneratedParticles = Vec2<size_t>(oldSize, newSize);
+        particleData.positions.insert(particleData.positions.end(), newPositions.begin(), newPositions.end());
+        particleData.resize_to_fit();
+        this->m_CenterParticles = ParticleHelpers::getCenter(newPositions) + this->m_ShiftCenterGeneratedParticles;
+        std::swap(this->m_GeneratedParticles, newPositions);
+        return static_cast<UInt>(this->m_GeneratedParticles.size());
+    }
+    ////////////////////////////////////////////////////////////////////////////////
+    return static_cast<UInt>(this->m_GeneratedParticles.size());
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

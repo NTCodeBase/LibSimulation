@@ -16,6 +16,7 @@
 
 #include <LibCommon/CommonSetup.h>
 #include <LibCommon/Geometry/GeometryObjects.h>
+#include <LibSimulation/Forward.h>
 #include <LibSimulation/Enums.h>
 
 #include <unordered_set>
@@ -52,7 +53,7 @@ public:
 
 protected:
     virtual void initializeParameters(const JParams& jParams);
-    StdVT_VecN   generateParticles(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects, bool bIgnoreOverlapped = false);
+    StdVT_VecN   generateParticleInside(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects, bool bIgnoreOverlapped = false);
     bool         loadParticlesFromFile(StdVT_VecN& positions);
     void         saveParticlesToFile(const StdVT_VecN& positions);
     ////////////////////////////////////////////////////////////////////////////////
@@ -70,11 +71,16 @@ protected:
     Real_t      m_ParticleRadius  = 0;
     ////////////////////////////////////////////////////////////////////////////////
     // internal particle generation
-    bool m_bGenerateParticleInside = false;
+    StdVT<VecN>  m_GeneratedParticles;
+    VecN         m_CenterParticles;
+    Vec2<size_t> m_RangeGeneratedParticles; // range [start, end) of generated particle indices
+    VecN         m_ShiftCenterGeneratedParticles = VecN(0);
     struct {
-        Real_t thicknessRatio = HugeReal();
-        Real_t jitterRatio    = Real_t(0);
-        VecN   samplingRatio  = VecN(1.0);
+        bool   bGenerateParticle = false;
+        Real_t thicknessRatio    = HugeReal();
+        Real_t jitterRatio       = Real_t(0);
+        VecN   samplingRatio     = VecN(1.0);
+        VecN   shiftCenter       = VecN(1.0);
     } m_GenParticleParams;
     ////////////////////////////////////////////////////////////////////////////////
     // particle file cache parameters
