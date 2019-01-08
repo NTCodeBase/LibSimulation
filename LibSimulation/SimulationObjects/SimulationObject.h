@@ -16,8 +16,9 @@
 
 #include <LibCommon/CommonSetup.h>
 #include <LibCommon/Geometry/GeometryObjects.h>
-#include <LibSimulation/Forward.h>
 #include <LibSimulation/Enums.h>
+#include <LibSimulation/Forward.h>
+#include <LibSimulation/Macros.h>
 
 #include <unordered_set>
 
@@ -27,10 +28,8 @@ namespace NTCodeBase {
 template<Int N, class Real_t>
 class SimulationObject {
     ////////////////////////////////////////////////////////////////////////////////
-    __NT_TYPE_ALIAS
+    __NT_TYPE_ALIAS __NT_DECLARE_LOGGER_ACCESSORS
     using GeometryPtr = SharedPtr<GeometryObject<N, Real_t>>;
-    Logger& logger() { assert(this->m_Logger != nullptr); return *this->m_Logger; }
-    const Logger& logger() const { assert(this->m_Logger != nullptr); return *this->m_Logger; }
     ////////////////////////////////////////////////////////////////////////////////
 public:
     SimulationObject() = delete;
