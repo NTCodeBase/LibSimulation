@@ -44,11 +44,11 @@ public:
     const auto& geometry() const { return m_GeometryObj; }
     auto negativeInside() const { return m_bNegativeInside; }
     ////////////////////////////////////////////////////////////////////////////////
-    virtual bool updateObject(UInt frame, Real_t frameFraction, Real_t timestep);
-    ////////////////////////////////////////////////////////////////////////////////
     bool   isInside(const VecN& ppos) const { return m_GeometryObj->isInside(ppos, m_bNegativeInside); }
     Real_t signedDistance(const VecN& ppos) const { return m_GeometryObj->signedDistance(ppos, m_bNegativeInside); }
     VecN   gradSignedDistance(const VecN& ppos, Real_t dxyz = Real_t(1e-4)) const { return m_GeometryObj->gradSignedDistance(ppos, m_bNegativeInside, dxyz); }
+    ////////////////////////////////////////////////////////////////////////////////
+    bool updateObject(UInt frame, Real_t frameFraction, Real_t timestep);
 
 protected:
     virtual void initializeParameters(const JParams& jParams);
