@@ -48,7 +48,7 @@ JParams ParticleSolverBase<N, Real_t>::loadScene(const String& sceneFile) {
     // read global parameters
     __NT_REQUIRE(jSceneParams.find("GlobalParameters") != jSceneParams.end());
     {
-        m_GlobalParameters.parseParameters(jSceneParams["GlobalParameters"]);
+        m_GlobalParams.parseParameters(jSceneParams["GlobalParameters"]);
         if(globalParams().bSaveFrameData || globalParams().bSaveMemoryState || globalParams().bPrintLog2File) {
             FileHelpers::createFolder(globalParams().dataPath);
             FileHelpers::copyFile(sceneFile, globalParams().dataPath + "/" + FileHelpers::getFileName(sceneFile));
@@ -62,7 +62,7 @@ JParams ParticleSolverBase<N, Real_t>::loadScene(const String& sceneFile) {
         logger().newLine();
         logger().printLog("Load scene file: " + sceneFile);
         logger().newLine();
-        m_GlobalParameters.printParameters(logger());
+        m_GlobalParams.printParameters(logger());
     }
 
     ////////////////////////////////////////////////////////////////////////////////

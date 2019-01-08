@@ -16,6 +16,7 @@
 
 #include <LibCommon/CommonSetup.h>
 #include <LibSimulation/Forward.h>
+#include <LibSimulation/Macros.h>
 #include <LibSimulation/ParticleSolvers/GlobalParameters.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -24,17 +25,12 @@ namespace NTCodeBase {
 template<Int N, class Real_t>
 class ParticleSolverBase {
     ////////////////////////////////////////////////////////////////////////////////
-    __NT_TYPE_ALIAS
+    __NT_TYPE_ALIAS __NT_DECLARE_PARTICLE_SOLVER_ACCESSORS
     ////////////////////////////////////////////////////////////////////////////////
 public:
     using RealType = Real_t; // for using in solver factory
     static constexpr Int dimension() { return N; }
     static constexpr bool isFloat() { return std::is_same_v<Real_t, float>; }
-    ////////////////////////////////////////////////////////////////////////////////
-    GlobalParameters<Real_t>& globalParams() { return this->m_GlobalParameters; }
-    Logger& logger() { assert(this->m_Logger != nullptr); return *this->m_Logger; }
-    const GlobalParameters<Real_t>& globalParams() const { return this->m_GlobalParameters; }
-    const Logger& logger() const { assert(this->m_Logger != nullptr); return *this->m_Logger; }
     ////////////////////////////////////////////////////////////////////////////////
     ParticleSolverBase();
     virtual ~ParticleSolverBase();
@@ -61,7 +57,7 @@ protected:
     SharedPtr<Logger> m_Logger = nullptr;
     SharedPtr<Logger> m_FallbackConsoleLogger = nullptr;
     ////////////////////////////////////////////////////////////////////////////////
-    GlobalParameters<Real_t> m_GlobalParameters;
+    GlobalParameters<Real_t> m_GlobalParams;
     ////////////////////////////////////////////////////////////////////////////////
     StdVT<SharedPtr<RigidBody<N, Real_t>>>         m_RigidBodies;
     StdVT<SharedPtr<ParticleGenerator<N, Real_t>>> m_ParticleGenerators;
