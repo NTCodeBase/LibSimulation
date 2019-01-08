@@ -34,7 +34,7 @@ class SimulationObject {
     ////////////////////////////////////////////////////////////////////////////////
 public:
     SimulationObject() = delete;
-    SimulationObject(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_, Real_t particleRadius);
+    SimulationObject(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_, Real_t particleRadius_);
     ////////////////////////////////////////////////////////////////////////////////
     // to remove
     auto objID() const { return m_ObjID; }

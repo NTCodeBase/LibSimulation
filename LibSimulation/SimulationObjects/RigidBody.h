@@ -54,19 +54,6 @@ protected:
     bool              m_bIsCollisionObject = true;
     BoundaryCondition m_BoundaryCondition  = BoundaryCondition::Slip;
     Real_t            m_BoundaryFriction   = Real_t(0);
-    ////////////////////////////////////////////////////////////////////////////////
-    // record generated particles
-    StdVT<VecN>  m_GeneratedParticles;
-    VecN         m_CenterParticles;
-    Vec2<size_t> m_RangeGeneratedParticles; // range [start, end) of generated particle indices
-    VecN         m_ShiftCenterGeneratedParticles = VecN(0);
-    ////////////////////////////////////////////////////////////////////////////////
-    // contrained particle parameters
-    bool m_bConstrainInsideParticles     = false;
-    bool m_bCrashIfNoConstrainedParticle = false;
-    bool m_bHasConstrainedParticles      = false;
-    // contrained particle data
-    std::unordered_map<UInt, std::pair<StdVT_UInt, StdVT_VecN>> m_ConstrainedParticleInfo;
 };
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

@@ -25,8 +25,8 @@
 namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-SimulationObject<N, Real_t>::SimulationObject(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_, Real_t particleRadius) :
-    m_Description(desc_), m_Logger(logger_), m_ParticleRadius(particleRadius) {
+SimulationObject<N, Real_t>::SimulationObject(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_, Real_t particleRadius_) :
+    m_Description(desc_), m_Logger(logger_), m_ParticleRadius(particleRadius_) {
     ////////////////////////////////////////////////////////////////////////////////
     // internal geometry object
     String geometryType;

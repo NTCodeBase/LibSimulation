@@ -50,21 +50,18 @@ void RigidBody<N, Real_t>::initializeParameters(const JParams& jParams) {
         logger().printLogIndent(String("Friction: ") + std::to_string(m_BoundaryFriction));
         logger().newLine();
     }
-    ////////////////////////////////////////////////////////////////////////////////
-    JSONHelpers::readBool(jParams, m_bConstrainInsideParticles,     "ConstrainInsideParticles");
-    JSONHelpers::readBool(jParams, m_bCrashIfNoConstrainedParticle, "CrashIfNoConstrainedParticle");
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 void RigidBody<N, Real_t>::updateObjParticles(StdVT_VecN& positions) {
-    const auto& range        = m_RangeGeneratedParticles; // [start, end)
-    const auto& positions_t0 = m_GeneratedParticles;
+    const auto& range        = this->m_RangeGeneratedParticles; // [start, end)
+    const auto& positions_t0 = this->m_GeneratedParticles;
     __NT_REQUIRE(positions_t0.size() + range[0] == range[1] && range[1] <= positions.size());
     Scheduler::parallel_for(positions_t0.size(),
                             [&](size_t p) {
                                 positions[p + range[0]] =
-                                    this->geometry()->transformAnimation(positions_t0[p] - m_CenterParticles) + m_CenterParticles;
+                                    this->geometry()->transformAnimation(positions_t0[p] - this->m_CenterParticles) + this->m_CenterParticles;
                             });
 }
 
@@ -99,8 +96,8 @@ VecX<N, Real_t> RigidBody<N, Real_t>::getObjectVelocity(const VecN& ppos, Real_t
     if(!this->geometry()->animationTransformed()) {
         return VecN(0);
     } else {
-        auto ppos_t0   = this->geometry()->invTransformAnimation(ppos - m_CenterParticles);
-        auto last_ppos = VecN(this->geometry()->getPrevAnimationTransformationMatrix() * VecNp1(ppos_t0, 1.0)) + m_CenterParticles;
+        auto ppos_t0   = this->geometry()->invTransformAnimation(ppos - this->m_CenterParticles);
+        auto last_ppos = VecN(this->geometry()->getPrevAnimationTransformationMatrix() * VecNp1(ppos_t0, 1.0)) + this->m_CenterParticles;
         return (ppos - last_ppos) / timestep;
     }
 }
