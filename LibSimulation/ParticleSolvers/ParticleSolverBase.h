@@ -25,12 +25,13 @@ namespace NTCodeBase {
 template<Int N, class Real_t>
 class ParticleSolverBase {
     ////////////////////////////////////////////////////////////////////////////////
-    __NT_TYPE_ALIAS __NT_DECLARE_PARTICLE_SOLVER_ACCESSORS
+    __NT_TYPE_ALIAS
     ////////////////////////////////////////////////////////////////////////////////
 public:
     using RealType = Real_t; // for using in solver factory
     static constexpr Int dimension() { return N; }
     static constexpr bool isFloat() { return std::is_same_v<Real_t, float>; }
+    __NT_DECLARE_PARTICLE_SOLVER_ACCESSORS
     ////////////////////////////////////////////////////////////////////////////////
     ParticleSolverBase();
     virtual ~ParticleSolverBase();

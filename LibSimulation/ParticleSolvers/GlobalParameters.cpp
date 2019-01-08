@@ -92,7 +92,7 @@ void GlobalParameters<Real_t>::printParameters(Logger& logger) {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<class Real_t>
-Real_t GlobalParameters<Real_t>::evolvedTime() const {
+Real_t GlobalParameters<Real_t>::systemTime() const {
     return frameDuration * static_cast<Real_t>(finishedFrame) + frameLocalTime;
 }
 
