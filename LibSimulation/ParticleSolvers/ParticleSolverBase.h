@@ -45,13 +45,8 @@ public:
 protected:
     virtual String getSolverName()        = 0;
     virtual String getSolverDescription() = 0;
-    virtual void   initializeSimulationParameters(const JParams& jParams) = 0;
-    virtual void   initializeIntegrationObjects(const JParams& jParams)   = 0;
-    virtual void   createParticleGenerators(const JParams& jParams)       = 0;
-    virtual void   createRigidBodies(const JParams& jParams) = 0;
     virtual bool   updateSimulationObjects(Real_t timestep);
-    virtual void   generateParticles() = 0;
-    virtual void   advanceFrame()      = 0;
+    virtual void   advanceFrame() = 0;
     ////////////////////////////////////////////////////////////////////////////////
     void setupLogger();
     ////////////////////////////////////////////////////////////////////////////////

@@ -43,7 +43,6 @@ JParams ParticleSolverBase<N, Real_t>::loadScene(const String& sceneFile) {
         return JParams();
     }
     auto jSceneParams = JParams::parse(inputFile);
-
     ////////////////////////////////////////////////////////////////////////////////
     // read global parameters
     __NT_REQUIRE(jSceneParams.find("GlobalParameters") != jSceneParams.end());
@@ -54,7 +53,6 @@ JParams ParticleSolverBase<N, Real_t>::loadScene(const String& sceneFile) {
             FileHelpers::copyFile(sceneFile, globalParams().dataPath + "/" + FileHelpers::getFileName(sceneFile));
         }
     }
-
     ////////////////////////////////////////////////////////////////////////////////
     // setup logger following global parameters
     {
@@ -64,26 +62,6 @@ JParams ParticleSolverBase<N, Real_t>::loadScene(const String& sceneFile) {
         logger().newLine();
         m_GlobalParams.printParameters(logger());
     }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // read simulation parameters
-    __NT_REQUIRE(jSceneParams.find("SimulationParameters") != jSceneParams.end());
-    {
-        JParams jSimParams = jSceneParams["SimulationParameters"];
-        initializeSimulationParameters(jSimParams);
-
-        // todo: rewrite this
-        //        m_SolverData.makeReady(m_ParameterManager);
-        ////////////////////////////////////////////////////////////////////////////////
-        initializeIntegrationObjects(jSimParams);
-        logger().separatorLine(1);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // and generate scene objects
-    //    createRigidBodyObjects(jSceneParams);
-    //    createParticleGenerators(jSceneParams);
-    //    generateParticles();
     ////////////////////////////////////////////////////////////////////////////////
     return jSceneParams;
 }
