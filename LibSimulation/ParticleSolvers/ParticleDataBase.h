@@ -24,7 +24,7 @@ struct ParticleDataBase {
     __NT_TYPE_ALIAS
     ////////////////////////////////////////////////////////////////////////////////
     UInt size() const { return static_cast<UInt>(positions.size()); }
-    void resize_to_fit();
+    virtual void resize_to_fit();
     ////////////////////////////////////////////////////////////////////////////////
     StdVT_VecN   positions, velocities;
     StdVT_Realt  masses;
