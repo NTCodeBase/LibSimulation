@@ -22,5 +22,10 @@ namespace NTCodeBase {
     Logger& logger() { assert(this->m_Logger != nullptr); return *this->m_Logger; }           \
     const GlobalParameters<Real_t>& globalParams() const { return this->m_GlobalParameters; } \
     const Logger& logger() const { assert(this->m_Logger != nullptr); return *this->m_Logger; }
+
+#define __NT_DECLARE_LOGGER_ACCESSORS                                                \
+    Logger & logger() { assert(this->m_Logger != nullptr); return *this->m_Logger; } \
+    const Logger& logger() const { assert(this->m_Logger != nullptr); return *this->m_Logger; }
+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 } // end namespace NTCodeBase
