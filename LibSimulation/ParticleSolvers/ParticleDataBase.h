@@ -13,7 +13,9 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 #pragma once
+
 #include <LibCommon/CommonSetup.h>
+#include <LibSimulation/Enums.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 namespace NTCodeBase {
@@ -24,6 +26,8 @@ struct ParticleDataBase {
     __NT_TYPE_ALIAS
     ////////////////////////////////////////////////////////////////////////////////
     UInt size() const { return static_cast<UInt>(positions.size()); }
+    bool active(UInt p) { return activity[p] == static_cast<Int8>(Activity::Active); }
+    bool constrained(UInt p) { return activity[p] == static_cast<Int8>(Activity::Constrained); }
     virtual void resize_to_fit();
     ////////////////////////////////////////////////////////////////////////////////
     StdVT_VecN   positions, velocities;
