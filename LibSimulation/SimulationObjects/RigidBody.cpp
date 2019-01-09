@@ -68,7 +68,7 @@ void RigidBody<N, Real_t>::updateObjParticles(StdVT_VecN& positions) {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 UInt RigidBody<N, Real_t>::generateParticles(ParticleDataBase<N, Real_t>& particleData, StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects) {
-    if(!this->m_GenParticleParams.bGenerateParticle) {
+    if(!this->m_GenParticleParams.bEnabled) {
         this->m_CenterParticles = (this->geometry()->getAABBMin() + this->geometry()->getAABBMax()) * Real_t(0.5);
         return 0;
     }

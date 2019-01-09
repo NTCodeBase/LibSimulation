@@ -42,7 +42,7 @@ void ParticleGenerator<N, Real_t>::initializeParameters(const JParams& jParams) 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 UInt ParticleGenerator<N, Real_t>::generateParticles(ParticleDataBase<N, Real_t>& particleData, StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects) {
-    if(!this->m_GenParticleParams.bGenerateParticle) {
+    if(!this->m_GenParticleParams.bEnabled) {
         this->m_CenterParticles = (this->geometry()->getAABBMin() + this->geometry()->getAABBMax()) * Real_t(0.5);
         return 0;
     }

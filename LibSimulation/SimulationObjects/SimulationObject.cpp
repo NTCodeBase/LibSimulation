@@ -60,13 +60,13 @@ void SimulationObject<N, Real_t>::initializeParameters(const JParams& jParams) {
     // internal particle generation
     if(jParams.find("ParticleGeneration") != jParams.end()) {
         auto jGen = jParams["ParticleGeneration"];
-        __NT_REQUIRE(JSONHelpers::readBool(jGen, m_GenParticleParams.bGenerateParticle, "GenerateParticleInside"));
+        __NT_REQUIRE(JSONHelpers::readBool(jGen, m_GenParticleParams.bEnabled, "Enable"));
         JSONHelpers::readValue(jGen, m_GenParticleParams.jitterRatio, "JitterRatio");
         JSONHelpers::readVector(jGen, m_GenParticleParams.samplingRatio, "SamplingRatio");
         JSONHelpers::readValue(jGen, m_GenParticleParams.thicknessRatio, "ThicknessRatio");
         JSONHelpers::readVector(jGen, m_GenParticleParams.shiftCenter, "ShiftCenter");
 
-        logger().printLogIndent(String("Generate particle inside: ") + (m_GenParticleParams.bGenerateParticle ? String("Yes") : String("No")));
+        logger().printLogIndent(String("Generate particle inside: ") + (m_GenParticleParams.bEnabled ? String("Yes") : String("No")));
         logger().printLogIndent(String("Jitter ratio (if applicable): ") + std::to_string(m_GenParticleParams.jitterRatio), 2);
         logger().printLogIndent(String("Sampling ratio (if applicable): ") + Formatters::toString(m_GenParticleParams.samplingRatio), 2);
         logger().printLogIndent(String("Thickenss ratio (if applicable): ") + Formatters::toString(m_GenParticleParams.thicknessRatio), 2);

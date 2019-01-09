@@ -75,11 +75,11 @@ protected:
     Vec2<size_t> m_RangeGeneratedParticles; // range [start, end) of generated particle indices
     VecN         m_ShiftCenterGeneratedParticles = VecN(0);
     struct {
-        bool   bGenerateParticle = false;
-        Real_t thicknessRatio    = HugeReal();
-        Real_t jitterRatio       = Real_t(0);
-        VecN   samplingRatio     = VecN(1.0);
-        VecN   shiftCenter       = VecN(1.0);
+        bool   bEnabled       = false;
+        Real_t thicknessRatio = HugeReal();
+        Real_t jitterRatio    = Real_t(0);
+        VecN   samplingRatio  = VecN(1.0);
+        VecN   shiftCenter    = VecN(0);
     } m_GenParticleParams;
     ////////////////////////////////////////////////////////////////////////////////
     // particle file cache parameters
