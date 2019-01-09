@@ -52,7 +52,7 @@ public:
 
 protected:
     virtual void initializeParameters(const JParams& jParams);
-    StdVT_VecN   generateParticleInside(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects, bool bIgnoreOverlapped = false);
+    StdVT_VecN   generateParticleInside();
     bool         loadParticlesFromFile(StdVT_VecN& positions);
     void         saveParticlesToFile(const StdVT_VecN& positions);
     ////////////////////////////////////////////////////////////////////////////////

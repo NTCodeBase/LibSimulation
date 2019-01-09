@@ -30,6 +30,7 @@ namespace NTCodeBase {
 template<Int N, class Real_t>
 void RigidBody<N, Real_t>::initializeParameters(const JParams& jParams) {
     JSONHelpers::readBool(jParams, m_bIsCollisionObject, "IsCollisionObject");
+    logger().printLogIndent(String("Collision object: ") + (m_bIsCollisionObject ? String("Yes") : String("No")));
     if(m_bIsCollisionObject) {
         if(String bcType; JSONHelpers::readValue(jParams, bcType, "BCType")) {
             __NT_REQUIRE(bcType == "Sticky" ||
@@ -67,14 +68,14 @@ void RigidBody<N, Real_t>::updateObjParticles(StdVT_VecN& positions) {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-UInt RigidBody<N, Real_t>::generateParticles(ParticleDataBase<N, Real_t>& particleData, StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects) {
+UInt RigidBody<N, Real_t>::generateParticles(ParticleDataBase<N, Real_t>& particleData) {
     if(!this->m_GenParticleParams.bEnabled) {
         this->m_CenterParticles = (this->geometry()->getAABBMin() + this->geometry()->getAABBMax()) * Real_t(0.5);
         return 0;
     }
     ////////////////////////////////////////////////////////////////////////////////
     __NT_REQUIRE(this->m_GeneratedParticles.size() == 0);
-    auto newPositions = this->generateParticleInside(otherObjects, false);
+    auto newPositions = this->generateParticleInside();
     if(newPositions.size() > 0) {
         size_t oldSize = particleData.positions.size();
         size_t nGen    = newPositions.size();

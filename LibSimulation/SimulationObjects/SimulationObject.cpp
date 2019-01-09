@@ -123,7 +123,7 @@ bool SimulationObject<N, Real_t>::updateObject(UInt frame, Real_t frameFraction,
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 typename SimulationObject<N, Real_t>::StdVT_VecN
-SimulationObject<N, Real_t>::generateParticleInside(StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects, bool bIgnoreOverlapped /*= false*/) {
+SimulationObject<N, Real_t>::generateParticleInside() {
     StdVT_VecN positions;
     if(this->loadParticlesFromFile(positions)) {
         return positions;
@@ -136,36 +136,17 @@ SimulationObject<N, Real_t>::generateParticleInside(StdVT<SharedPtr<SimulationOb
     ////////////////////////////////////////////////////////////////////////////////
     positions.reserve(glm::compMul(pGrid));
     ParallelObjects::SpinLock lock;
-    if(bIgnoreOverlapped) {
-        Scheduler::parallel_for(pGrid,
-                                [&](auto... idx) {
-                                    auto node = VecX<N, Real_t>(idx...);
-                                    VecN ppos = boxMin + node * spacing;
-                                    if(auto geoPhi = this->signedDistance(ppos);
-                                       (geoPhi < -m_ParticleRadius) && (geoPhi > -thicknessThreshold)) {
-                                        lock.lock();
-                                        positions.push_back(ppos);
-                                        lock.unlock();
-                                    }
-                                });
-    } else {
-        Scheduler::parallel_for(pGrid,
-                                [&](auto... idx) {
-                                    auto node = VecX<N, Real_t>(idx...);
-                                    VecN ppos = boxMin + node * spacing;
-                                    for(auto& obj : otherObjects) {
-                                        if(obj->objID() != this->objID() && obj->signedDistance(ppos) < 0) {
-                                            return;
-                                        }
-                                    }
-                                    if(auto geoPhi = this->signedDistance(ppos);
-                                       (geoPhi < -m_ParticleRadius) && (geoPhi > -thicknessThreshold)) {
-                                        lock.lock();
-                                        positions.push_back(ppos);
-                                        lock.unlock();
-                                    }
-                                });
-    }
+    Scheduler::parallel_for(pGrid,
+                            [&](auto... idx) {
+                                auto node = VecX<N, Real_t>(idx...);
+                                VecN ppos = boxMin + node * spacing;
+                                if(auto geoPhi = this->signedDistance(ppos);
+                                   (geoPhi < -m_ParticleRadius) && (geoPhi > -thicknessThreshold)) {
+                                    lock.lock();
+                                    positions.push_back(ppos);
+                                    lock.unlock();
+                                }
+                            });
     positions.shrink_to_fit();
     ////////////////////////////////////////////////////////////////////////////////
     // jitter positions

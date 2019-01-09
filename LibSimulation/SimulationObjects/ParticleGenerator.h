@@ -30,7 +30,7 @@ public:
     ParticleGenerator() = delete;
     ParticleGenerator(const String& desc_, const JParams& jParams_, const SharedPtr<Logger>& logger_, Real_t particleRadius) :
         SimulationObject<N, Real_t>(desc_, jParams_, logger_, particleRadius) { initializeParameters(jParams_); }
-    UInt generateParticles(ParticleDataBase<N, Real_t>& particleData, StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects);
+    UInt generateParticles(ParticleDataBase<N, Real_t>& particleData);
 protected:
     virtual void initializeParameters(const JParams& jParams) override;
     ////////////////////////////////////////////////////////////////////////////////

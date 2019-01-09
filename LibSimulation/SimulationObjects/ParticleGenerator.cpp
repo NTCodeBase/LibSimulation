@@ -41,7 +41,7 @@ void ParticleGenerator<N, Real_t>::initializeParameters(const JParams& jParams) 
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-UInt ParticleGenerator<N, Real_t>::generateParticles(ParticleDataBase<N, Real_t>& particleData, StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects) {
+UInt ParticleGenerator<N, Real_t>::generateParticles(ParticleDataBase<N, Real_t>& particleData) {
     if(!this->m_GenParticleParams.bEnabled) {
         this->m_CenterParticles = (this->geometry()->getAABBMin() + this->geometry()->getAABBMax()) * Real_t(0.5);
         return 0;
@@ -51,7 +51,7 @@ UInt ParticleGenerator<N, Real_t>::generateParticles(ParticleDataBase<N, Real_t>
     if(this->m_GeneratedParticles.size() > 0) {
         newPositions = this->m_GeneratedParticles;
     } else {
-        newPositions = this->generateParticleInside(otherObjects, true);
+        newPositions = this->generateParticleInside();
     }
     size_t nGen = newPositions.size();
     __NT_REQUIRE(nGen > 0 || !this->m_bCrashIfNoParticle);

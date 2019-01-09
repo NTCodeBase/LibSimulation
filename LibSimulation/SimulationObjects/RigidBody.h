@@ -35,7 +35,7 @@ public:
     bool resolveCollision(VecN& ppos, VecN& pvel, Real_t timestep);                   // return true if pvel has been modified
     bool resolveCollisionVelocityOnly(const VecN& ppos, VecN& pvel, Real_t timestep); // return true if pvel has been modified
     void updateObjParticles(StdVT_VecN& positions);
-    UInt generateParticles(ParticleDataBase<N, Real_t>& particleData, StdVT<SharedPtr<SimulationObject<N, Real_t>>>& otherObjects);
+    UInt generateParticles(ParticleDataBase<N, Real_t>& particleData);
 
 protected:
     ////////////////////////////////////////////////////////////////////////////////
