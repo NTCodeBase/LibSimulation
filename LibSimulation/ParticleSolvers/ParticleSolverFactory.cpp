@@ -21,13 +21,16 @@
 namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-bool ParticleSolverFactory<N, Real_t>::registerSolver(const String& solverName, SolverCreationFuncPtr funcCreate) {
+bool ParticleSolverFactory<N, Real_t>::registerSolver(const String& solverName, CreationFuncPtr creationFunc) {
 #ifdef __NT_DEBUG__
     printf("Register particle solver: %s\n", solverName.c_str());
     fflush(stdout);
 #endif
-    auto[it, bSuccess] = getCreationFuncPtrs().emplace(solverName, funcCreate);
+    auto[it, bSuccess] = getCreationFuncPtrs().emplace(solverName, creationFunc);
     __NT_UNUSED(it);
+    if(bSuccess) {
+        s_SolverList.push_back(solverName);
+    }
     return bSuccess;
 }
 
@@ -39,7 +42,7 @@ SharedPtr<ParticleSolverBase<N, Real_t>> ParticleSolverFactory<N, Real_t>::creat
         printf("Create particle solver: %s\n", solverName.c_str());
         fflush(stdout);
 #endif
-        return it->second(); // call the solverCreationFunc
+        return it->second(); // call the creationFunc
     }
     return nullptr;
 }
@@ -65,19 +68,9 @@ SharedPtr<ParticleSolverBase<N, Real_t>> ParticleSolverFactory<N, Real_t>::creat
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
-StdVT_String ParticleSolverFactory<N, Real_t>::getSolverList() {
-    StdVT_String solverList;
-    for(auto& [k, v] : getCreationFuncPtrs()) {
-        solverList.push_back(k);
-    }
-    return solverList;
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-template<Int N, class Real_t>
-std::unordered_map<String, typename ParticleSolverFactory<N, Real_t>::SolverCreationFuncPtr>&
+std::unordered_map<String, typename ParticleSolverFactory<N, Real_t>::CreationFuncPtr>&
 ParticleSolverFactory<N, Real_t>::getCreationFuncPtrs() {
-    static std::unordered_map<String, SolverCreationFuncPtr> creationFuncPtrs;
+    static std::unordered_map<String, CreationFuncPtr> creationFuncPtrs;
     return creationFuncPtrs;
 }
 

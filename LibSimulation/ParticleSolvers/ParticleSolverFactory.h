@@ -13,7 +13,8 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 #pragma once
-#include <LibSimulation/ParticleSolvers/ParticleSolverBase.h>
+#include <LibCommon/CommonSetup.h>
+#include <LibSimulation/Forward.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 namespace NTCodeBase {
@@ -24,17 +25,18 @@ namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 class ParticleSolverFactory {
+    using CreationFuncPtr = SharedPtr<ParticleSolverBase<N, Real_t>>(*)();
 public:
-    ParticleSolverFactory()     = delete;
-    using SolverCreationFuncPtr = SharedPtr<ParticleSolverBase<N, Real_t>>(*)();
+    ParticleSolverFactory() = delete;
     ////////////////////////////////////////////////////////////////////////////////
-    static bool                                     registerSolver(const String& solverName, SolverCreationFuncPtr funcCreate);
+    static bool registerSolver(const String& solverName, CreationFuncPtr creationFunc);
+    static StdVT_String getSolverList() { return s_SolverList; }
+    ////////////////////////////////////////////////////////////////////////////////
     static SharedPtr<ParticleSolverBase<N, Real_t>> createSolver(const String& solverName);
     static SharedPtr<ParticleSolverBase<N, Real_t>> createSolverFromJSon(const String& fileName);
-    static StdVT_String                             getSolverList();
-
 private:
-    static std::unordered_map<String, SolverCreationFuncPtr>& getCreationFuncPtrs();
+    static inline StdVT_String s_SolverList {};
+    static std::unordered_map<String, CreationFuncPtr>& getCreationFuncPtrs();
 };
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
