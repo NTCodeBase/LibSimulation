@@ -25,15 +25,16 @@ namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 class ParticleSolverFactory {
-    using CreationFuncPtr = SharedPtr<ParticleSolverBase<N, Real_t>>(*)();
+    using CreationFuncPtr   = SharedPtr<ParticleSolverBase<N, Real_t>>(*)();
+    using ParticleSolverPtr = SharedPtr<ParticleSolverBase<N, Real_t>>;
 public:
     ParticleSolverFactory() = delete;
     ////////////////////////////////////////////////////////////////////////////////
     static bool registerSolver(const String& solverName, CreationFuncPtr creationFunc);
     static StdVT_String getSolverList() { return s_SolverList; }
     ////////////////////////////////////////////////////////////////////////////////
-    static SharedPtr<ParticleSolverBase<N, Real_t>> createSolver(const String& solverName);
-    static SharedPtr<ParticleSolverBase<N, Real_t>> createSolverFromJSon(const String& fileName);
+    static ParticleSolverPtr createSolver(const String& solverName);
+    static ParticleSolverPtr createSolverFromJSon(const String& fileName);
 private:
     static inline StdVT_String s_SolverList {};
     static std::unordered_map<String, CreationFuncPtr>& getCreationFuncPtrs();
