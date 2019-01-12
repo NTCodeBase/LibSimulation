@@ -126,8 +126,8 @@ void ParticleSolverBase<N, Real_t>::finalizeSimulation() {
                                   logger->printCenterAligned(String("Simulation finished"), '+');
                                   logger->printLog(String("Total frames: ") +
                                                    Formatters::toString(globalParams().finishedFrame - globalParams().startFrame + 1u) +
-                                                   String(" (Save frame data: ") + (globalParams().bSaveFrameData ? String("Yes") : String("No")) +
-                                                   String(" | Save state: ") + (globalParams().bSaveMemoryState ? String("Yes") : String("No")) +
+                                                   String(" (Save frame data: ") + Formatters::toString(globalParams().bSaveFrameData) +
+                                                   String(" | Save state: ") + Formatters::toString(globalParams().bSaveMemoryState) +
                                                    (globalParams().bSaveMemoryState ?
                                                     String(" (") + std::to_string(globalParams().nFramesPerState) +
                                                     String(" frames/state)") : String("")) + String(")"));

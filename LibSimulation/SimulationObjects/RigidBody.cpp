@@ -30,7 +30,7 @@ namespace NTCodeBase {
 template<Int N, class Real_t>
 void RigidBody<N, Real_t>::initializeParameters(const JParams& jParams) {
     JSONHelpers::readBool(jParams, m_bIsCollisionObject, "IsCollisionObject");
-    logger().printLogIndent(String("Collision object: ") + (m_bIsCollisionObject ? String("Yes") : String("No")));
+    logger().printLogIndent(String("Collision object: ") + Formatters::toString(m_bIsCollisionObject));
     if(m_bIsCollisionObject) {
         if(String bcType; JSONHelpers::readValue(jParams, bcType, "BCType")) {
             __NT_REQUIRE(bcType == "Sticky" ||

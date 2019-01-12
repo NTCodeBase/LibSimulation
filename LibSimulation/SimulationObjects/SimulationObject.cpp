@@ -66,7 +66,7 @@ void SimulationObject<N, Real_t>::initializeParameters(const JParams& jParams) {
         JSONHelpers::readValue(jGen, m_GenParticleParams.thicknessRatio, "ThicknessRatio");
         JSONHelpers::readVector(jGen, m_GenParticleParams.shiftCenter, "ShiftCenter");
 
-        logger().printLogIndent(String("Generate particle inside: ") + (m_GenParticleParams.bEnabled ? String("Yes") : String("No")));
+        logger().printLogIndent(String("Generate particle inside: ") + Formatters::toString(m_GenParticleParams.bEnabled));
         logger().printLogIndent(String("Jitter ratio (if applicable): ") + std::to_string(m_GenParticleParams.jitterRatio), 2);
         logger().printLogIndent(String("Sampling ratio (if applicable): ") + Formatters::toString(m_GenParticleParams.samplingRatio), 2);
         logger().printLogIndent(String("Thickenss ratio (if applicable): ") + Formatters::toString(m_GenParticleParams.thicknessRatio), 2);

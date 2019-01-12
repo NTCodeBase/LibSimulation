@@ -68,10 +68,10 @@ void GlobalParameters<Real_t>::printParameters(Logger& logger) {
     ////////////////////////////////////////////////////////////////////////////////
     // data IO parameters
     logger.printLogIndentIf(bSaveMemoryState || bSaveFrameData || bPrintLog2File, ("Data path: ") + dataPath);
-    logger.printLogIndent(String("Load saved memory state: ") + (bLoadMemoryState ? String("Yes") : String("No")));
-    logger.printLogIndent(String("Save memory state: ") + (bSaveMemoryState ? String("Yes") : String("No")));
+    logger.printLogIndent(String("Load saved memory state: ") + Formatters::toString(bLoadMemoryState));
+    logger.printLogIndent(String("Save memory state: ") + Formatters::toString(bSaveMemoryState));
     logger.printLogIndentIf(bSaveMemoryState, String("Frames/state: ") + std::to_string(nFramesPerState), 2);
-    logger.printLogIndent(String("Save simulation data each frame: ") + (bSaveFrameData ? String("Yes") : String("No")));
+    logger.printLogIndent(String("Save simulation data each frame: ") + Formatters::toString(bSaveFrameData));
     if(bSaveFrameData && saveDataList.size() > 0) {
         String str; for(const auto& s : saveDataList) {
             str += s; str += String(", ");
@@ -83,8 +83,8 @@ void GlobalParameters<Real_t>::printParameters(Logger& logger) {
 
     ////////////////////////////////////////////////////////////////////////////////
     // logging parameters
-    logger.printLogIndent(String("Log to file: ") + (bPrintLog2File ? String("Yes") : String("No")));
-    logger.printLogIndent(String("Log to console: ") + (bPrintLog2Console ? String("Yes") : String("No")));
+    logger.printLogIndent(String("Log to file: ") + Formatters::toString(bPrintLog2File));
+    logger.printLogIndent(String("Log to console: ") + Formatters::toString(bPrintLog2Console));
     ////////////////////////////////////////////////////////////////////////////////
 
     logger.newLine();
