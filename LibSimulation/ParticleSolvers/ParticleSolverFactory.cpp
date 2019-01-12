@@ -23,7 +23,7 @@ namespace NTCodeBase {
 template<Int N, class Real_t>
 bool ParticleSolverFactory<N, Real_t>::registerSolver(const String& solverName, CreationFuncPtr creationFunc) {
 #ifdef __NT_DEBUG__
-    printf("Register particle solver: %s\n", solverName.c_str());
+    printf("[%s]: Register: %s\n", factoryName().c_str(), solverName.c_str());
     fflush(stdout);
 #endif
     auto[it, bSuccess] = getCreationFuncPtrs().emplace(solverName, creationFunc);
@@ -72,6 +72,14 @@ std::unordered_map<String, typename ParticleSolverFactory<N, Real_t>::CreationFu
 ParticleSolverFactory<N, Real_t>::getCreationFuncPtrs() {
     static std::unordered_map<String, CreationFuncPtr> creationFuncPtrs;
     return creationFuncPtrs;
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+template<Int N, class Real_t>
+String ParticleSolverFactory<N, Real_t>::factoryName() {
+    static String name = String("ParticleSolverFactory-") + std::to_string(N) + String("D-") +
+                         (std::is_same_v<Real_t, float> ? String("float") : String("double"));
+    return name;
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

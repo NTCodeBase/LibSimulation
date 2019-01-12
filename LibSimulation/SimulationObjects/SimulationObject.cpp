@@ -31,7 +31,7 @@ SimulationObject<N, Real_t>::SimulationObject(const String& desc_, const JParams
     // internal geometry object
     String geometryType;
     __NT_REQUIRE(JSONHelpers::readValue(jParams_, geometryType, "GeometryType"));
-    m_GeometryObj = GeometryObjectFactory::createGeometry<N, Real_t>(geometryType, jParams_);
+    m_GeometryObj = GeometryObjectFactory<N, Real_t>::createGeometry(geometryType, jParams_);
     __NT_REQUIRE(m_GeometryObj != nullptr);
     ////////////////////////////////////////////////////////////////////////////////
     // other parameters
@@ -55,7 +55,7 @@ void SimulationObject<N, Real_t>::initializeParameters(const JParams& jParams) {
         m_ObjName = String("Object_") + std::to_string(m_ObjID);
     }
     logger().printLog(m_Description + String(": ") + m_ObjName);
-    logger().printLogIndent(String("Geometry: ") + m_GeometryObj->name());
+    logger().printLogIndent(String("Geometry: ") + m_GeometryObj->geometryName());
     ////////////////////////////////////////////////////////////////////////////////
     // internal particle generation
     if(jParams.find("ParticleGeneration") != jParams.end()) {

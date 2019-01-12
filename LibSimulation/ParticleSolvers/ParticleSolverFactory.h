@@ -36,8 +36,9 @@ public:
     static ParticleSolverPtr createSolver(const String& solverName);
     static ParticleSolverPtr createSolverFromJSon(const String& fileName);
 private:
-    static inline StdVT_String s_SolverList {};
     static std::unordered_map<String, CreationFuncPtr>& getCreationFuncPtrs();
+    static String                                       factoryName();
+    static inline StdVT_String s_SolverList {};
 };
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -52,5 +53,6 @@ protected:
     static inline bool s_bRegistered =
         ParticleSolverFactory<Solver::dimension(), typename Solver::RealType>::registerSolver(Solver::solverName(), Solver::createSolver);
 };
+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 } // end namespace NTCodeBase
