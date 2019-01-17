@@ -26,8 +26,8 @@ struct ParticleDataBase {
     __NT_TYPE_ALIAS
     ////////////////////////////////////////////////////////////////////////////////
     UInt size() const { return static_cast<UInt>(positions.size()); }
-    bool isActive(UInt p) { return activity[p] == static_cast<Int8>(Activity::Active); }
-    bool isConstrained(UInt p) { return activity[p] == static_cast<Int8>(Activity::Constrained); }
+    bool isActive(UInt p) const { return activity[p] == static_cast<Int8>(Activity::Active); }
+    bool isConstrained(UInt p) const { return activity[p] == static_cast<Int8>(Activity::Constrained); }
     void setActive(UInt p) { activity[p] = static_cast<Int8>(Activity::Active); }
     void setConstrained(UInt p) { activity[p] = static_cast<Int8>(Activity::Constrained); }
     virtual void resize_to_fit();
