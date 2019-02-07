@@ -22,6 +22,7 @@ CONFIG += staticlib
 
 HEADERS = $$files($$PWD/LibSimulation/*.h, true)
 SOURCES += $$files($$PWD/LibSimulation/*.cpp, true)
+OTHER_FILES += Makefile
 
 #-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 CONFIG(debug, debug|release) {
