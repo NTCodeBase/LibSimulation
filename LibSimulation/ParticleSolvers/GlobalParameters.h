@@ -40,8 +40,8 @@ struct GlobalParameters {
 
     ////////////////////////////////////////////////////////////////////////////////
     // data IO parameters
-    FileFormat   outputFormat       = FileFormat::BNN;
     String       dataPath           = String("./Output");
+    FileFormat   outputFormat       = FileFormat::BNN;
     bool         bLoadMemoryState   = true;
     bool         bSaveMemoryState   = false;
     bool         bSaveFrameData     = false;

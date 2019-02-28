@@ -35,6 +35,18 @@ void GlobalParameters<Real_t>::parseParameters(const JParams& jParams) {
     ////////////////////////////////////////////////////////////////////////////////
     // data IO parameters
     JSONHelpers::readValue(jParams, dataPath, "DataPath");
+    if(String format; JSONHelpers::readValue(jParams, format, "OutputFormat")) {
+        __NT_REQUIRE(format == "OBJ" || format == "BGEO" || format == "BNN" || format == "Binary");
+        if(format == "OBJ") {
+            outputFormat = FileFormat::OBJ;
+        } else if(format == "BGEO") {
+            outputFormat = FileFormat::BGEO;
+        } else if(format == "BNN") {
+            outputFormat = FileFormat::BNN;
+        } else {
+            outputFormat = FileFormat::BINARY;
+        }
+    }
     JSONHelpers::readBool(jParams, bLoadMemoryState,   "LoadMemoryState");
     JSONHelpers::readBool(jParams, bSaveMemoryState,   "SaveMemoryState");
     JSONHelpers::readBool(jParams, bSaveFrameData,     "SaveFrameData");
@@ -67,7 +79,18 @@ void GlobalParameters<Real_t>::printParameters(Logger& logger) {
 
     ////////////////////////////////////////////////////////////////////////////////
     // data IO parameters
-    logger.printLogIndentIf(bSaveMemoryState || bSaveFrameData || bPrintLog2File, ("Data path: ") + dataPath);
+    if(bSaveMemoryState || bSaveFrameData || bPrintLog2File) {
+        logger.printLogIndent("Data path: " + dataPath);
+        if(outputFormat == FileFormat::OBJ) {
+            logger.printLogIndent("Output format: OBJ");
+        } else if(outputFormat == FileFormat::BGEO) {
+            logger.printLogIndent("Output format: Bgeo");
+        } else if(outputFormat == FileFormat::BNN) {
+            logger.printLogIndent("Output format: BNN");
+        } else {
+            logger.printLogIndent("Output format: Binary");
+        }
+    }
     logger.printLogIndent(String("Load saved memory state: ") + Formatters::toString(bLoadMemoryState));
     logger.printLogIndent(String("Save memory state: ") + Formatters::toString(bSaveMemoryState));
     logger.printLogIndentIf(bSaveMemoryState, String("Frames/state: ") + std::to_string(nFramesPerState), 2);
