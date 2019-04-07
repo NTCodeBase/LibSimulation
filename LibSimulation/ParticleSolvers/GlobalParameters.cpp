@@ -74,7 +74,7 @@ void GlobalParameters<Real_t>::printParameters(Logger& logger) {
     logger.printLogIndent(String("Frame duration: ") + Formatters::toSciString(frameDuration) +
                           String(" (~") + std::to_string(static_cast<int>(round(1.0_f / frameDuration))) + String(" fps)"));
     logger.printLogIndent(String("Start frame: ") + std::to_string(startFrame));
-    logger.printLogIndent(String("Number of phase in frames: ") + std::to_string(nPhaseInFrames));
+    logger.printLogIndent(String("Phase in frames: ") + std::to_string(nPhaseInFrames));
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////
