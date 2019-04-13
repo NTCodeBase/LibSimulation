@@ -34,6 +34,8 @@ struct GlobalParameters {
     UInt   startFrame        = 1u;
     UInt   finalFrame        = 1u;
     UInt   finishedFrame     = 0u;
+    Real_t lastFrameTime     = Real_t(0);
+    Real_t lastStepTime      = Real_t(0);
     Real_t nPhaseInFrames    = Real_t(0);
     Real_t systemTime() const;
     ////////////////////////////////////////////////////////////////////////////////

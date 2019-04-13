@@ -109,6 +109,7 @@ void ParticleSolverBase<N, Real_t>::advanceFrame(UInt frame) {
     Timer timer;
     timer.tick();
     advanceFrame();
+    globalParams().lastFrameTime = timer.tock();
     logger().newLine();
     logger().printLog(String("Frame #") + std::to_string(frame) + String(" finished | Frame duration: ") +
                       Formatters::toSciString(globalParams().frameDuration) +
