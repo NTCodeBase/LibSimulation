@@ -36,11 +36,13 @@ void GlobalParameters<Real_t>::parseParameters(const JParams& jParams) {
     // data IO parameters
     JSONHelpers::readValue(jParams, dataPath, "DataPath");
     if(String format; JSONHelpers::readValue(jParams, format, "OutputFormat")) {
-        __NT_REQUIRE(format == "OBJ" || format == "BGEO" || format == "BNN" || format == "Binary");
+        __NT_REQUIRE(format == "OBJ" || format == "BGEO" || format == "BGEO_GZ" || format == "BNN" || format == "Binary");
         if(format == "OBJ") {
             outputFormat = FileFormat::OBJ;
         } else if(format == "BGEO") {
             outputFormat = FileFormat::BGEO;
+        } else if(format == "BGEO_GZ") {
+            outputFormat = FileFormat::BGEO_GZ;
         } else if(format == "BNN") {
             outputFormat = FileFormat::BNN;
         } else {
