@@ -31,7 +31,7 @@ public:
     using RealT = Real_t; // for using in factory
     static constexpr Int dimension() { return N; }
     static constexpr bool isFloat() { return std::is_same_v<Real_t, float>; }
-    static constexpr String nameRealT() { return isFloat() ? String("float") : String("double"); }
+    static String nameRealT() { return isFloat() ? String("float") : String("double"); }
     __NT_DECLARE_PARTICLE_SOLVER_ACCESSORS
     ////////////////////////////////////////////////////////////////////////////////
     ParticleSolverBase();
