@@ -15,6 +15,7 @@ INCLUDES += -I$(ROOT_PATH)/../LibCommon/Externals/debugbreak
 INCLUDES += -I$(ROOT_PATH)/../LibCommon/Externals/fmt/include
 INCLUDES += -I$(ROOT_PATH)/../LibCommon/Externals/glm
 INCLUDES += -I$(ROOT_PATH)/../LibCommon/Externals/json/single_include/nlohmann
+INCLUDES += -I$(ROOT_PATH)/../LibCommon/Externals/libmorton/libmorton/include
 INCLUDES += -I$(ROOT_PATH)/../LibCommon/Externals/spdlog/include
 INCLUDES += -I$(ROOT_PATH)/../LibCommon/Externals/tbb_linux/include
 
