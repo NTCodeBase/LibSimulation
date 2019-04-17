@@ -136,17 +136,17 @@ SimulationObject<N, Real_t>::generateParticleInside() {
     ////////////////////////////////////////////////////////////////////////////////
     positions.reserve(glm::compMul(pGrid));
     ParallelObjects::SpinLock lock;
-    Scheduler::parallel_for(pGrid,
-                            [&](auto... idx) {
-                                auto node = VecX<N, Real_t>(idx...);
-                                VecN ppos = boxMin + node * spacing;
-                                if(auto geoPhi = this->signedDistance(ppos);
-                                   (geoPhi < -m_ParticleRadius) && (geoPhi > -thicknessThreshold)) {
-                                    lock.lock();
-                                    positions.push_back(ppos);
-                                    lock.unlock();
-                                }
-                            });
+    ParallelExec::run(pGrid,
+                      [&](auto... idx) {
+                          auto node = VecX<N, Real_t>(idx...);
+                          VecN ppos = boxMin + node * spacing;
+                          if(auto geoPhi = this->signedDistance(ppos);
+                             (geoPhi < -m_ParticleRadius) && (geoPhi > -thicknessThreshold)) {
+                              lock.lock();
+                              positions.push_back(ppos);
+                              lock.unlock();
+                          }
+                      });
     positions.shrink_to_fit();
     ////////////////////////////////////////////////////////////////////////////////
     // jitter positions

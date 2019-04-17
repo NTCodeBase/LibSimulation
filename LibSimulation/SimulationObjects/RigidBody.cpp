@@ -59,11 +59,11 @@ void RigidBody<N, Real_t>::updateObjParticles(StdVT_VecN& positions) {
     const auto& range        = this->m_RangeGeneratedParticles; // [start, end)
     const auto& positions_t0 = this->m_GeneratedParticles;
     __NT_REQUIRE(positions_t0.size() + range[0] == range[1] && range[1] <= positions.size());
-    Scheduler::parallel_for(positions_t0.size(),
-                            [&](size_t p) {
-                                positions[p + range[0]] =
-                                    this->geometry()->transformAnimation(positions_t0[p] - this->m_CenterParticles) + this->m_CenterParticles;
-                            });
+    ParallelExec::run(positions_t0.size(),
+                      [&](size_t p) {
+                          positions[p + range[0]] =
+                              this->geometry()->transformAnimation(positions_t0[p] - this->m_CenterParticles) + this->m_CenterParticles;
+                      });
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

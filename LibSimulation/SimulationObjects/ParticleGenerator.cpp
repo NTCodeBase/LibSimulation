@@ -14,12 +14,10 @@
 
 #include <LibCommon/Geometry/GeometryObjects.h>
 #include <LibCommon/Logger/Logger.h>
-#include <LibCommon/ParallelHelpers/Scheduler.h>
 #include <LibCommon/Utils/JSONHelpers.h>
 #include <LibCommon/Utils/NumberHelpers.h>
 
 #include <LibParticle/ParticleHelpers.h>
-
 #include <LibSimulation/SimulationObjects/ParticleGenerator.h>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
