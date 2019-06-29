@@ -33,9 +33,9 @@ void RigidBody<N, Real_t>::initializeParameters(const JParams& jParams) {
     logger().printLogIndent(String("Collision object: ") + Formatters::toString(m_bIsCollisionObject));
     if(m_bIsCollisionObject) {
         if(String bcType; JSONHelpers::readValue(jParams, bcType, "BCType")) {
-            __NT_REQUIRE(bcType == "Sticky" ||
-                         bcType == "Slip" ||
-                         bcType == "Separate");
+            NT_REQUIRE(bcType == "Sticky" ||
+                       bcType == "Slip" ||
+                       bcType == "Separate");
             if(bcType == "Sticky") {
                 m_BoundaryCondition = BoundaryCondition::Sticky;
                 logger().printLogIndent(String("Boundary condition type: Sticky"));
@@ -58,7 +58,7 @@ template<Int N, class Real_t>
 void RigidBody<N, Real_t>::updateObjParticles(StdVT_VecN& positions) {
     const auto& range        = this->m_RangeGeneratedParticles; // [start, end)
     const auto& positions_t0 = this->m_GeneratedParticles;
-    __NT_REQUIRE(positions_t0.size() + range[0] == range[1] && range[1] <= positions.size());
+    NT_REQUIRE(positions_t0.size() + range[0] == range[1] && range[1] <= positions.size());
     ParallelExec::run(positions_t0.size(),
                       [&](size_t p) {
                           positions[p + range[0]] =
@@ -74,7 +74,7 @@ UInt RigidBody<N, Real_t>::generateParticles(ParticleDataBase<N, Real_t>& partic
         return 0;
     }
     ////////////////////////////////////////////////////////////////////////////////
-    __NT_REQUIRE(this->m_GeneratedParticles.size() == 0);
+    NT_REQUIRE(this->m_GeneratedParticles.size() == 0);
     auto newPositions = this->generateParticleInside();
     if(newPositions.size() > 0) {
         size_t oldSize = particleData.positions.size();
@@ -280,7 +280,7 @@ bool RigidBody<N, Real_t>::resolveCollisionVelocityOnly_SeparateBC(const VecN& p
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-__NT_INSTANTIATE_CLASS_COMMON_DIMENSIONS_AND_TYPES(RigidBody)
+NT_INSTANTIATE_CLASS_COMMON_DIMENSIONS_AND_TYPES(RigidBody)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 } // end namespace NTCodeBase

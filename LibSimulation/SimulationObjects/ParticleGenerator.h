@@ -22,7 +22,7 @@ namespace NTCodeBase {
 template<Int N, class Real_t>
 class ParticleGenerator : public SimulationObject<N, Real_t> {
     ////////////////////////////////////////////////////////////////////////////////
-    __NT_TYPE_ALIAS
+    NT_TYPE_ALIAS
     Logger& logger() { assert(this->m_Logger != nullptr); return *this->m_Logger; }
     const Logger& logger() const { assert(this->m_Logger != nullptr); return *this->m_Logger; }
     ////////////////////////////////////////////////////////////////////////////////

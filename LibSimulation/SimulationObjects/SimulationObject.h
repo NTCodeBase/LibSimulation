@@ -28,7 +28,7 @@ namespace NTCodeBase {
 template<Int N, class Real_t>
 class SimulationObject {
     ////////////////////////////////////////////////////////////////////////////////
-    __NT_TYPE_ALIAS __NT_DECLARE_LOGGER_ACCESSORS
+    NT_TYPE_ALIAS NT_DECLARE_LOGGER_ACCESSORS
     using GeometryPtr = SharedPtr<GeometryObject<N, Real_t>>;
     ////////////////////////////////////////////////////////////////////////////////
 public:

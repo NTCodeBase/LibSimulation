@@ -30,9 +30,9 @@ SimulationObject<N, Real_t>::SimulationObject(const String& desc_, const JParams
     ////////////////////////////////////////////////////////////////////////////////
     // internal geometry object
     String geometryType;
-    __NT_REQUIRE(JSONHelpers::readValue(jParams_, geometryType, "GeometryType"));
+    NT_REQUIRE(JSONHelpers::readValue(jParams_, geometryType, "GeometryType"));
     m_GeometryObj = GeometryObjectFactory<N, Real_t>::createGeometry(geometryType, jParams_);
-    __NT_REQUIRE(m_GeometryObj != nullptr);
+    NT_REQUIRE(m_GeometryObj != nullptr);
     ////////////////////////////////////////////////////////////////////////////////
     // other parameters
     initializeParameters(jParams_);
@@ -60,7 +60,7 @@ void SimulationObject<N, Real_t>::initializeParameters(const JParams& jParams) {
     // internal particle generation
     if(jParams.find("ParticleGeneration") != jParams.end()) {
         auto jGen = jParams["ParticleGeneration"];
-        __NT_REQUIRE(JSONHelpers::readBool(jGen, m_GenParticleParams.bEnabled, "Enable"));
+        NT_REQUIRE(JSONHelpers::readBool(jGen, m_GenParticleParams.bEnabled, "Enable"));
         JSONHelpers::readValue(jGen, m_GenParticleParams.jitterRatio, "JitterRatio");
         JSONHelpers::readVector(jGen, m_GenParticleParams.samplingRatio, "SamplingRatio");
         JSONHelpers::readValue(jGen, m_GenParticleParams.thicknessRatio, "ThicknessRatio");
@@ -88,23 +88,23 @@ void SimulationObject<N, Real_t>::initializeParameters(const JParams& jParams) {
             } else if(pFileType == "BINARY" || pFileType == "binary") {
                 m_FileFormat = FileFormat::BINARY;
             } else {
-                __NT_DIE("Unknow file format");
+                NT_DIE("Unknow file format");
             }
         }
         logger().printLogIndent(String("Use file cache: Yes"));
         logger().printLogIndent(String("Particle file: ") + m_ParticleFile, 2);
         switch(m_FileFormat) {
             case FileFormat::OBJ:
-                logger().printLogIndent(String("Particle file format: OBJ"),          2);
+                logger().printLogIndent(String("Particle file format: OBJ"), 2);
                 break;
             case FileFormat::BGEO:
-                logger().printLogIndent(String("Particle file format: BGEO"),         2);
+                logger().printLogIndent(String("Particle file format: BGEO"), 2);
                 break;
             case FileFormat::BNN:
                 logger().printLogIndent(String("Particle file format: BananaFormat"), 2);
                 break;
             case FileFormat::BINARY:
-                logger().printLogIndent(String("Particle file format: Binary"),       2);
+                logger().printLogIndent(String("Particle file format: Binary"), 2);
                 break;
             default:;
         }
@@ -116,7 +116,7 @@ void SimulationObject<N, Real_t>::initializeParameters(const JParams& jParams) {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 bool SimulationObject<N, Real_t>::updateObject(UInt frame, Real_t frameFraction, Real_t timestep) {
-    __NT_UNUSED(timestep);
+    NT_UNUSED(timestep);
     return m_GeometryObj->updateTransformation(frame, frameFraction);
 }
 
@@ -137,7 +137,7 @@ SimulationObject<N, Real_t>::generateParticleInside() {
     positions.reserve(glm::compMul(pGrid));
     ParallelObjects::SpinLock lock;
     ParallelExec::run(pGrid,
-                      [&](auto... idx) {
+                      [&](auto ... idx) {
                           auto node = VecX<N, Real_t>(idx...);
                           VecN ppos = boxMin + node * spacing;
                           if(auto geoPhi = this->signedDistance(ppos);
@@ -205,7 +205,7 @@ void SimulationObject<N, Real_t>::saveParticlesToFile(const StdVT_VecN& position
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-__NT_INSTANTIATE_CLASS_COMMON_DIMENSIONS_AND_TYPES(SimulationObject)
+NT_INSTANTIATE_CLASS_COMMON_DIMENSIONS_AND_TYPES(SimulationObject)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 } // end namespace NTCodeBase

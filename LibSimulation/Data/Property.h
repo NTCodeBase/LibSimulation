@@ -89,19 +89,19 @@ public:
     ////////////////////////////////////////////////////////////////////////////////
     template<class T>
     void addProperty(const char* propName, const char* description) {
-        __NT_REQUIRE(StringHash::isValidHash(propName) && !hasProperty(propName));
+        NT_REQUIRE(StringHash::isValidHash(propName) && !hasProperty(propName));
         m_Properties[StringHash::hash(propName)] = new Property<T>(m_Name, propName, description);
     }
 
     template<class T>
     void addProperty(const char* propName, const char* description, const T& defaultValue) {
-        __NT_REQUIRE(StringHash::isValidHash(propName) && !hasProperty(propName));
+        NT_REQUIRE(StringHash::isValidHash(propName) && !hasProperty(propName));
         m_Properties[StringHash::hash(propName)] = new Property<T>(m_Name, propName, description, defaultValue);
     }
 
     template<class T>
     void addDiscreteProperty(const char* propName, const char* description, const T& defaultValue) {
-        __NT_REQUIRE(StringHash::isValidHash(propName) && !hasDiscreteProperty(propName));
+        NT_REQUIRE(StringHash::isValidHash(propName) && !hasDiscreteProperty(propName));
         DiscreteProperty tmp = defaultValue;
         m_DiscreteProperties.emplace(StringHash::hash(propName), std::make_tuple(String(propName), String(description), tmp));
     }
@@ -175,12 +175,12 @@ public:
     }
 
     void removeProperty(const char* propName) {
-        __NT_REQUIRE(StringHash::isValidHash(propName) && hasProperty(propName));
+        NT_REQUIRE(StringHash::isValidHash(propName) && hasProperty(propName));
         m_Properties.erase(StringHash::hash(propName));
     }
 
     void removeDiscreteProperty(const char* propName) {
-        __NT_REQUIRE(StringHash::isValidHash(propName) && hasDiscreteProperty(propName));
+        NT_REQUIRE(StringHash::isValidHash(propName) && hasDiscreteProperty(propName));
         m_DiscreteProperties.erase(StringHash::hash(propName));
     }
 
@@ -211,39 +211,39 @@ public:
      * \brief Group must be added before adding properties of that group
      */
     void addGroup(const char* groupName) {
-        __NT_REQUIRE(StringHash::isValidHash(groupName) && !hasGroup(groupName));
+        NT_REQUIRE(StringHash::isValidHash(groupName) && !hasGroup(groupName));
         auto hashVal = StringHash::hash(groupName);
         m_PropertyGroups.emplace(hashVal, PropertyGroup(String(groupName), hashVal));
     }
 
     template<class T>
     void addProperty(const char* groupName, const char* description, const char* propName) {
-        __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
+        NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
         m_PropertyGroups[StringHash::hash(groupName)].addProperty<T>(propName, description);
     }
 
     template<class T>
-    void addProperty(const char* groupName, const char* propName, const char* description,  const T& defaultValue) {
-        __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
+    void addProperty(const char* groupName, const char* propName, const char* description, const T& defaultValue) {
+        NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
         m_PropertyGroups[StringHash::hash(groupName)].addProperty<T>(propName, description, defaultValue);
     }
 
     template<class T>
     void addDiscreteProperty(const char* groupName, const char* description, const char* propName) {
-        __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
+        NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
         m_PropertyGroups[StringHash::hash(groupName)].addDiscreteProperty<T>(propName, description);
     }
 
     template<class T>
-    void addDiscreteProperty(const char* groupName, const char* propName, const char* description,  const T& defaultValue) {
-        __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
+    void addDiscreteProperty(const char* groupName, const char* propName, const char* description, const T& defaultValue) {
+        NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
         m_PropertyGroups[StringHash::hash(groupName)].addDiscreteProperty<T>(propName, description, defaultValue);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     template<class T>
     const Property<T>& property(const char* groupName, const char* propName) const {
-        __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
+        NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
         return m_PropertyGroups[StringHash::hash(groupName)].property<T>(propName);
     }
 
@@ -254,7 +254,7 @@ public:
 
     template<class T>
     const T& discreteProperty(const char* groupName, const char* propName) const {
-        __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
+        NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
         return m_PropertyGroups[StringHash::hash(groupName)].discreteProperty<T>(propName);
     }
 
@@ -274,7 +274,7 @@ public:
     const auto& group(const char* groupName) const { return group(StringHash::hash(groupName)); }
 
     void removeGroup(const char* groupName) {
-        __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
+        NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
         m_PropertyGroups.erase(StringHash::hash(groupName));
     }
 

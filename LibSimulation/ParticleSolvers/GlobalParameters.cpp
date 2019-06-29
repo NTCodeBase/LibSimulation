@@ -36,7 +36,7 @@ void GlobalParameters<Real_t>::parseParameters(const JParams& jParams) {
     // data IO parameters
     JSONHelpers::readValue(jParams, dataPath, "DataPath");
     if(String format; JSONHelpers::readValue(jParams, format, "OutputFormat")) {
-        __NT_REQUIRE(format == "OBJ" || format == "BGEO" || format == "BGEO_GZ" || format == "BNN" || format == "Binary");
+        NT_REQUIRE(format == "OBJ" || format == "BGEO" || format == "BGEO_GZ" || format == "BNN" || format == "Binary");
         if(format == "OBJ") {
             outputFormat = FileFormat::OBJ;
         } else if(format == "BGEO") {
@@ -129,7 +129,7 @@ bool GlobalParameters<Real_t>::saveData(const String& dataName) const {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-__NT_INSTANTIATE_STRUCT_COMMON_TYPES(GlobalParameters)
+NT_INSTANTIATE_STRUCT_COMMON_TYPES(GlobalParameters)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 } // end namespace NTCodeBase

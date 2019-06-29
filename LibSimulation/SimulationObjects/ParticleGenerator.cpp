@@ -25,7 +25,7 @@ namespace NTCodeBase {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 template<Int N, class Real_t>
 void ParticleGenerator<N, Real_t>::initializeParameters(const JParams& jParams) {
-    __NT_REQUIRE(JSONHelpers::readValue(jParams, m_MaterialDensity, "MaterialDensity"));
+    NT_REQUIRE(JSONHelpers::readValue(jParams, m_MaterialDensity, "MaterialDensity"));
     m_ParticleMass = m_MaterialDensity * MathHelpers::pow(Real_t(2.0) * this->m_ParticleRadius, N);
     logger().printLogIndent(String("Material density: ") + std::to_string(m_MaterialDensity));
     logger().printLogIndent(String("Particle mass: ") + std::to_string(m_ParticleMass));
@@ -52,7 +52,7 @@ UInt ParticleGenerator<N, Real_t>::generateParticles(ParticleDataBase<N, Real_t>
         newPositions = this->generateParticleInside();
     }
     size_t nGen = newPositions.size();
-    __NT_REQUIRE(nGen > 0 || !this->m_bCrashIfNoParticle);
+    NT_REQUIRE(nGen > 0 || !this->m_bCrashIfNoParticle);
     if(nGen > 0) {
         size_t oldSize = particleData.positions.size();
         size_t newSize = oldSize + nGen;
@@ -71,7 +71,7 @@ UInt ParticleGenerator<N, Real_t>::generateParticles(ParticleDataBase<N, Real_t>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-__NT_INSTANTIATE_CLASS_COMMON_DIMENSIONS_AND_TYPES(ParticleGenerator)
+NT_INSTANTIATE_CLASS_COMMON_DIMENSIONS_AND_TYPES(ParticleGenerator)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 } // end namespace NTCodeBase

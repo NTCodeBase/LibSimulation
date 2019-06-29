@@ -39,16 +39,16 @@ public:
     template<class Output> const Output& get() const { assert(std::holds_alternative<Output>(m_Data)); return std::get<Output>(m_Data); }
     const char* getDataPtr() const { return std::visit([&](auto&& arg) { return reinterpret_cast<const char*>(&arg); }, m_Data); }
     ////////////////////////////////////////////////////////////////////////////////
-    template<class Input> void parseRequiredValue(const JParams& jParams) { __NT_REQUIRE(parseValue<Input>(jParams)); }
+    template<class Input> void parseRequiredValue(const JParams& jParams) { NT_REQUIRE(parseValue<Input>(jParams)); }
     template<class Input> bool parseValue(const JParams& jParams) {
         assert(std::holds_alternative<Input>(m_Data));
-        if constexpr (std::is_same_v<Input, bool>) {
+        if constexpr(std::is_same_v<Input, bool>) {
             bool& bVal = std::get<bool>(m_Data);
             return JSONHelpers::readBool(jParams, bVal, m_Name);
         } else {
-            if constexpr (std::is_same_v<Input, int>|| std::is_same_v<Input, UInt>
-                          || std::is_same_v<Input, float>|| std::is_same_v<Input, double>
-                          || std::is_same_v<Input, String>) {
+            if constexpr(std::is_same_v<Input, int>|| std::is_same_v<Input, UInt>
+                         || std::is_same_v<Input, float>|| std::is_same_v<Input, double>
+                         || std::is_same_v<Input, String>) {
                 Input& val = std::get<Input>(m_Data);
                 return JSONHelpers::readValue(jParams, val, m_Name);
             } else {
@@ -75,9 +75,9 @@ public:
     ////////////////////////////////////////////////////////////////////////////////
     template<class Input>
     Parameter& addParameter(const char* paramName, const char* description, const Input& defaultValue) {
-        __NT_REQUIRE(StringHash::isValidHash(paramName) && !hasParameter(paramName));
+        NT_REQUIRE(StringHash::isValidHash(paramName) && !hasParameter(paramName));
         auto [iter, bSuccess] = m_ParameterGroups.emplace(StringHash::hash(paramName), Parameter(m_Name, paramName, description));
-        __NT_REQUIRE(bSuccess);
+        NT_REQUIRE(bSuccess);
         auto& param = iter->second;
         param.set<Input>(defaultValue);
         return param;
@@ -86,9 +86,9 @@ public:
     template<class Input>
     Parameter& addParameter(const char* paramName, const char* description, const Input& defaultValue, const JParams& jParams,
                             bool bRequiredInput = false) {
-        __NT_REQUIRE(StringHash::isValidHash(paramName) && !hasParameter(paramName));
+        NT_REQUIRE(StringHash::isValidHash(paramName) && !hasParameter(paramName));
         auto [iter, bSuccess] = m_ParameterGroups.emplace(StringHash::hash(paramName), Parameter(m_Name, paramName, description));
-        __NT_REQUIRE(bSuccess);
+        NT_REQUIRE(bSuccess);
         auto& param = iter->second;
         param.set<Input>(defaultValue);
         if(bRequiredInput) {
@@ -100,7 +100,7 @@ public:
     }
 
     void removeParameter(const char* paramName) {
-        __NT_REQUIRE(StringHash::isValidHash(paramName) && hasParameter(paramName));
+        NT_REQUIRE(StringHash::isValidHash(paramName) && hasParameter(paramName));
         m_ParameterGroups.erase(StringHash::hash(paramName));
     }
 
@@ -126,7 +126,7 @@ public:
      * \brief Group must be added before adding parameters of that group
      */
     void addGroup(const char* groupName, const char* groupDesc) {
-        __NT_REQUIRE(StringHash::isValidHash(groupName) && !hasGroup(groupName));
+        NT_REQUIRE(StringHash::isValidHash(groupName) && !hasGroup(groupName));
         auto hashVal = StringHash::hash(groupName);
         m_ParameterGroups.emplace(hashVal, ParameterGroup(String(groupName), String(groupDesc)));
     }
@@ -134,14 +134,14 @@ public:
     ////////////////////////////////////////////////////////////////////////////////
     template<class Input>
     Parameter& addParameter(const char* groupName, const char* paramName, const char* description, const Input& defaultValue) {
-        __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
+        NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
         return m_ParameterGroups.at(StringHash::hash(groupName)).addParameter(paramName, description, defaultValue);
     }
 
     template<class Input>
     Parameter& addParameter(const char* groupName, const char* paramName, const char* description, const Input& defaultValue, const JParams& jParams,
                             bool bRequiredInput = false) {
-        __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
+        NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
         return m_ParameterGroups.at(StringHash::hash(groupName)).addParameter(paramName, description, defaultValue, jParams, bRequiredInput);
     }
 
@@ -171,7 +171,7 @@ public:
     }
 
     void removeGroup(const char* groupName) {
-        __NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
+        NT_REQUIRE(StringHash::isValidHash(groupName) && hasGroup(groupName));
         m_ParameterGroups.erase(StringHash::hash(groupName));
     }
 

@@ -23,7 +23,7 @@ namespace NTCodeBase {
 template<Int N, class Real_t>
 struct ParticleDataBase {
     ////////////////////////////////////////////////////////////////////////////////
-    __NT_TYPE_ALIAS
+    NT_TYPE_ALIAS
     ////////////////////////////////////////////////////////////////////////////////
     UInt size() const { return static_cast<UInt>(positions.size()); }
     bool isActive(UInt p) const { return activity[p] == static_cast<Int8>(Activity::Active); }
